@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <AssemblyName>KoC</AssemblyName>
+        <Description>Kick or Clutch Mod</Description>
+        <Version>1.0.0</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json;
+            https://nuget.samboy.dev/v3/index.json
+        </RestoreAdditionalProjectSources>
+        <RootNamespace>KoC</RootNamespace>
+    </PropertyGroup>
+
+    <!-- NuGet Package Dependencies -->
+    <ItemGroup>
+        <!-- BepInEx Dependencies -->
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.Core" Version="5.*"/>
+
+        <!-- Additional Plugins and Libraries -->
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
+        <PackageReference Include="UnityEngine.Modules" Version="2021.3.10" IncludeAssets="compile"/>
+        <PackageReference Include="Zeepkist.GameLibs" Version="1.0.0-alpha.15.59.630"/>
+        <PackageReference Include="ZeepSDK" Version="1.25.1"/>
+    </ItemGroup>
+
+    <!-- Conditional Dependencies -->
+    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <!-- Post-Build Scripts -->
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <!-- Delete the plugin directory if it exists -->
+        <RemoveDir Directories="C:\Program Files (x86)\Steam\steamapps\common\Zeepkist\BepInEx\plugins\Sideloaded\$(ProjectName)"/>
+
+        <!-- Create the plugin directory -->
+        <MakeDir Directories="C:\Program Files (x86)\Steam\steamapps\common\Zeepkist\BepInEx\plugins\Sideloaded\$(ProjectName)"/>
+
+        <!-- Copy DLL to the plugin directory -->
+        <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Zeepkist\BepInEx\plugins\Sideloaded\$(ProjectName)\$(ProjectName)-$(Version).dll&quot;"/>
+    </Target>
+
+</Project>
