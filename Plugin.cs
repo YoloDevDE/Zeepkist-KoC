@@ -17,7 +17,7 @@ public class Plugin : BaseUnityPlugin
 {
     private Harmony _harmony;
     private StateMachine _stateMachine;
-
+    public ITaggedMessenger Messenger;
     public ConfigEntry<string> AutoMessage { get; set; }
     public ConfigEntry<string> ClutchMessage { get; set; }
     public ConfigEntry<string> KickMessage { get; set; }
@@ -29,14 +29,14 @@ public class Plugin : BaseUnityPlugin
     {
         _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
         _harmony.PatchAll();
-
+        Messenger = MessengerApi.CreateTaggedMessenger("KoC");
         RegisterCommands();
         _stateMachine = new StateMachine(this);
         SaveLevelFromLobby.OnHandle += SaveCurrentLevelAsVotingLevelToJson;
         InitConfigBindings();
         // SyncVotingLevelsConfigWithJson();
 
-    
+
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
     }
 
@@ -48,21 +48,25 @@ public class Plugin : BaseUnityPlugin
 
     private void InitConfigBindings()
     {
-        AutoMessage = Config.Bind("Messages (Chat)", "Mapper Finish","DO NOT TAKE THE MAPPER FINISH OR YOU WILL GET EJECTED TO THE MOON!");
+        AutoMessage = Config.Bind("Messages (Chat)", "Mapper Finish",
+            "DO NOT TAKE THE MAPPER FINISH OR YOU WILL GET EJECTED TO THE MOON!");
         KickMessage = Config.Bind("Messages (Chat)", "On Kick", "Sorry %a - It is a Kick! cya o/");
         ClutchMessage = Config.Bind("Messages (Chat)", "On Clutch", "Congratulations %a - It is a Clutch! :party:");
         ResultServerMessage = Config.Bind("Messages (Server)", "Result", "%l by %a -> %r");
-        JoinMessageNormal = Config.Bind("Messages (Server)", "Joinmessage", "Welcome to Kick or Clutch. Subscribe to Owl!");
-        JoinMessageVoting = Config.Bind("Messages (Server)", "Joinmessage (Votinglevel)", "Welcome to Kick or Clutch. Subscribe to Owl! DO NOT USE THE MAPPER FINISH!");
+        JoinMessageNormal =
+            Config.Bind("Messages (Server)", "Joinmessage", "Welcome to Kick or Clutch. Subscribe to Owl!");
+        JoinMessageVoting = Config.Bind("Messages (Server)", "Joinmessage (Votinglevel)",
+            "Welcome to Kick or Clutch. Subscribe to Owl! DO NOT USE THE MAPPER FINISH!");
     }
 
 
     private void RegisterCommands()
     {
-        ChatCommandApi.RegisterLocalChatCommand<ModStart>();
-        ChatCommandApi.RegisterLocalChatCommand<ModStop>();
+        ChatCommandApi.RegisterLocalChatCommand<EnablePlugin>();
+        ChatCommandApi.RegisterLocalChatCommand<DisablePlugin>();
         ChatCommandApi.RegisterLocalChatCommand<EndVoting>();
         ChatCommandApi.RegisterLocalChatCommand<SaveLevelFromLobby>();
+        ChatCommandApi.RegisterLocalChatCommand<RegisterMapForVotingManually>();
     }
 
     public void SyncVotingLevelsConfigWithJson()
