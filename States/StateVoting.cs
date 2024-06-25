@@ -142,7 +142,7 @@ public class StateVoting : BaseState
 
     private int CountNeutrals()
     {
-        return 0; // Placeholder -> If sometime Neutrals come into play we will implement this. For now it "adds the host"
+        return 1; // Placeholder -> If sometime Neutrals come into play we will implement this. For now it "adds the host"
     }
 
 
