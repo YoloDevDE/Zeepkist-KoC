@@ -7,7 +7,7 @@ public class StateDisabled : BaseState
     public StateDisabled(StateMachine stateMachine) : base(stateMachine)
     {
     }
-    
+
 
     public override void Enter()
     {
@@ -19,6 +19,5 @@ public class StateDisabled : BaseState
     public override void Exit()
     {
         StateMachine.Enabled = true;
-        ChatApi.SendMessage($"/joinmessage orange {StateMachine.Plugin.JoinMessageNormal.Value}");
     }
 }

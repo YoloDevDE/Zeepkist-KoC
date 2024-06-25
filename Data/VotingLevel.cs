@@ -1,4 +1,4 @@
-﻿namespace KoC;
+﻿namespace KoC.Data;
 
 public class VotingLevel
 {

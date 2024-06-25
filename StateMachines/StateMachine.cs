@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using KoC.Commands;
 using KoC.Data;
 using KoC.States;
+using ZeepSDK.Chat;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
 
@@ -9,16 +11,15 @@ namespace KoC;
 
 public class StateMachine
 {
+    public SubmissionLevel CurrentSubmissionLevel;
+    public VotingLevel CurrentVotingLevel;
     public bool Enabled;
-    public Plugin Plugin;
     public BaseState State;
-    public SubmissionLevel SubmissionLevel;
     public List<VotingLevel> VotingLevels;
 
-    public StateMachine(Plugin plugin)
+    public StateMachine()
     {
-        Plugin = plugin;
-        VotingLevels = Plugin.GetVotingLevels();
+        VotingLevels = Plugin.Instance.GetVotingLevels();
         CommandStart.OnHandle += Enable;
         CommandStop.OnHandle += Disable;
         State = new StateDisabled(this);
@@ -29,13 +30,13 @@ public class StateMachine
     {
         if (!Enabled)
         {
-            MessengerApi.Log("KoC started");
             MultiplayerApi.DisconnectedFromGame += Disable;
-            SwitchState(new StateRegisterSubmission(this));
+            TransitionTo(new StateRegisterSubmission(this));
+            ChatApi.SendMessage("KoC started");
         }
         else
         {
-            Plugin.Messenger.LogWarning("Already started");
+            Plugin.Instance.Messenger.LogWarning("Already started");
         }
     }
 
@@ -45,17 +46,20 @@ public class StateMachine
         {
             MessengerApi.Log("KoC stopped");
             MultiplayerApi.DisconnectedFromGame -= Disable;
-            State.Exit();
-            State = new StateDisabled(this);
-            State.Enter();
+            TransitionTo(new StateDisabled(this));
         }
         else
         {
-            Plugin.Messenger.LogWarning("Already stopped");
+            Plugin.Instance.Messenger.LogWarning("Already stopped");
         }
     }
 
-    public void SwitchState(BaseState state)
+    public VotingLevel GetVotingLevelByUid(string uid)
+    {
+        return VotingLevels.FirstOrDefault(level => level.LevelUid == uid);
+    }
+
+    public void TransitionTo(BaseState state)
     {
         State.Exit();
         State = state;

@@ -4,9 +4,8 @@ using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using KoC.Commands;
+using KoC.Data;
 using Newtonsoft.Json;
-using Steamworks.Data;
-using UnityEngine.UIElements;
 using ZeepSDK.ChatCommands;
 using ZeepSDK.Messaging;
 using ZeepSDK.Storage;
@@ -18,8 +17,10 @@ namespace KoC;
 public class Plugin : BaseUnityPlugin
 {
     private Harmony _harmony;
-    private StateMachine _stateMachine;
     public ITaggedMessenger Messenger;
+    public StateMachine Machine { get; private set; }
+
+    public static Plugin Instance { get; private set; }
     public ConfigEntry<string> AutoMessage { get; set; }
     public ConfigEntry<string> ClutchMessage { get; set; }
     public ConfigEntry<string> KickMessage { get; set; }
@@ -31,15 +32,19 @@ public class Plugin : BaseUnityPlugin
     {
         _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
         _harmony.PatchAll();
+        Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
+    }
+
+    private void Start()
+    {
+        Instance = this;
+
+
         Messenger = MessengerApi.CreateTaggedMessenger("KoC");
         RegisterCommands();
-        _stateMachine = new StateMachine(this);
-        CommandCreateVotingLevel.OnHandle += SaveCurrentLevelAsVotingLevelToJson;
         InitConfigBindings();
-        // SyncVotingLevelsConfigWithJson();
-
-
-        Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
+        SyncVotingLevelsConfigWithJson();
+        Machine = new StateMachine();
     }
 
     private void OnDestroy()
@@ -69,6 +74,9 @@ public class Plugin : BaseUnityPlugin
         ChatCommandApi.RegisterLocalChatCommand<CommandVotingResult>();
         ChatCommandApi.RegisterLocalChatCommand<CommandCreateVotingLevel>();
         ChatCommandApi.RegisterLocalChatCommand<CommandRegisterSubmissionLevel>();
+
+
+        CommandCreateVotingLevel.OnHandle += SaveCurrentLevelAsVotingLevelToJson;
     }
 
     public void SyncVotingLevelsConfigWithJson()
@@ -84,7 +92,7 @@ public class Plugin : BaseUnityPlugin
             Config.Bind(votingLevel.LevelName, "Kick", votingLevel.KickFinishTime, ConfigDescription.Empty);
         }
     }
-    
+
 
     public List<VotingLevel> GetVotingLevels()
     {
@@ -94,9 +102,7 @@ public class Plugin : BaseUnityPlugin
         try
         {
             object json = modStorage.LoadFromJson("VotingLevels");
-            Logger.LogInfo(json);
             jsonWrapper = JsonConvert.DeserializeObject<VotingLevelsJsonWrapper>(json.ToString());
-            Logger.LogInfo($"{jsonWrapper}");
         }
         catch (Exception e)
         {

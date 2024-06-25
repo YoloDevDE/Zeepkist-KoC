@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using KoC.Data;
 using ZeepkistClient;
 using ZeepkistNetworking;
 using ZeepSDK.Messaging;
@@ -7,21 +8,21 @@ using ZeepSDK.Racing;
 
 namespace KoC.States;
 
-public class StateAfterVoting : BaseState
+public class StatePostVoting : BaseState
 {
-    public StateAfterVoting(StateMachine stateMachine) : base(stateMachine)
+    public StatePostVoting(StateMachine stateMachine) : base(stateMachine)
     {
     }
 
     public override void Enter()
     {
-        RacingApi.LevelLoaded += RacingApiOnLevelLoaded;
-        ZeepkistNetwork.PlayerResultsChanged += PlayerResultsChanged;
+        RacingApi.LevelLoaded += OnLevelLoaded;
+        ZeepkistNetwork.PlayerResultsChanged += OnPlayerResultsChanged;
     }
 
-    private void RacingApiOnLevelLoaded()
+    private void OnLevelLoaded()
     {
-        StateMachine.SwitchState(new StateRegisterSubmission(StateMachine));
+        StateMachine.TransitionTo(new StateRegisterSubmission(StateMachine));
     }
 
     private VotingLevel FetchVotingLevel(List<VotingLevel> votingLevels)
@@ -46,7 +47,7 @@ public class StateAfterVoting : BaseState
             return true;
         }
 
-        if (steamID == StateMachine.SubmissionLevel.AuthorSteamId)
+        if (steamID == StateMachine.CurrentSubmissionLevel.AuthorSteamId)
         {
             return true;
         }
@@ -54,9 +55,9 @@ public class StateAfterVoting : BaseState
         return ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
     }
 
-    private void PlayerResultsChanged(ZeepkistNetworkPlayer player)
+    private void OnPlayerResultsChanged(ZeepkistNetworkPlayer player)
     {
-        VotingLevel currentVotingLevel = FetchVotingLevel(StateMachine.Plugin.GetVotingLevels());
+        VotingLevel currentVotingLevel = FetchVotingLevel(Plugin.Instance.GetVotingLevels());
         foreach (LeaderboardItem item in ZeepkistNetwork.Leaderboard)
         {
             if (item.Time < currentVotingLevel.ClutchFinishTime)
@@ -73,7 +74,7 @@ public class StateAfterVoting : BaseState
 
     public override void Exit()
     {
-        RacingApi.LevelLoaded -= RacingApiOnLevelLoaded;
-        ZeepkistNetwork.PlayerResultsChanged -= PlayerResultsChanged;
+        RacingApi.LevelLoaded -= OnLevelLoaded;
+        ZeepkistNetwork.PlayerResultsChanged -= OnPlayerResultsChanged;
     }
 }

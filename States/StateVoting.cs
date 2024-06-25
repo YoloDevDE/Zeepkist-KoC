@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using KoC.Commands;
+using KoC.Data;
+using KoC.Utils;
 using ZeepkistClient;
 using ZeepkistNetworking;
 using ZeepSDK.Chat;
-using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
 using ZeepSDK.Racing;
 
@@ -13,155 +13,181 @@ namespace KoC.States;
 
 public class StateVoting : BaseState
 {
-    private VotingLevel _currentVotingLevel;
-    private int _voteNo;
-    private int _voteTotal;
-    private int _voteYes;
-
-
     public StateVoting(StateMachine stateMachine) : base(stateMachine)
     {
     }
 
-    public override void Exit()
-    {
-        ZeepkistNetwork.PlayerResultsChanged -= PlayerResultsChanged;
-        MultiplayerApi.PlayerJoined -= PlayerResultsChanged;
-        MultiplayerApi.PlayerLeft -= PlayerResultsChanged;
-        CommandVotingResult.OnHandle -= OnVotingResult;
-        RacingApi.RoundEnded -= OnGameStateChange;
-
-        ChatApi.SendMessage("/joinmessage orange " + StateMachine.Plugin.JoinMessageNormal.Value);
-    }
+    private VotingLevel CurrentVotingLevel { get; set; }
+    private int KickVotes { get; set; }
+    private int ClutchVotes { get; set; }
 
     public override void Enter()
     {
-        _currentVotingLevel = FetchVotingLevel(StateMachine.Plugin.GetVotingLevels());
-        ZeepkistNetwork.PlayerResultsChanged += PlayerResultsChanged;
-        MultiplayerApi.PlayerJoined += PlayerResultsChanged;
-        MultiplayerApi.PlayerLeft += PlayerResultsChanged;
-        CommandVotingResult.OnHandle += OnVotingResult;
-        RacingApi.RoundEnded += OnGameStateChange;
-        PlayerResultsChanged(null);
-        ChatApi.SendMessage(StateMachine.Plugin.AutoMessage.Value);
-        ChatApi.SendMessage("/joinmessage orange " + StateMachine.Plugin.JoinMessageVoting.Value);
+        // Initialize the current voting level
+        CurrentVotingLevel = StateMachine.GetVotingLevelByUid(ZeepkistNetwork.CurrentLobby.LevelUID);
+
+        // Subscribe to events
+        ZeepkistNetwork.PlayerResultsChanged += OnPlayerResultsChanged;
+        MultiplayerApi.PlayerJoined += OnPlayerJoined;
+        MultiplayerApi.PlayerLeft += OnPlayerLeft;
+        RacingApi.RoundEnded += OnRoundEnded;
+        FavoritePlayerChangedNotifier.FavoritePlayersChanged += OnFavoritePlayersChanged;
+        CommandVotingResult.OnHandle += OnVotingFinished;
+
+        // Initial calls
+        UpdateVotes();
+
+        // Send messages
+        ChatApi.SendMessage("/joinmessage orange " + Plugin.Instance.JoinMessageVoting.Value);
+        ChatApi.SendMessage(Plugin.Instance.AutoMessage.Value);
     }
 
-    private void OnGameStateChange()
+    public override void Exit()
     {
-        OnVotingResult();
-        StateMachine.SwitchState(new StateAfterVoting(StateMachine));
+        // Unsubscribe from events
+        ZeepkistNetwork.PlayerResultsChanged -= OnPlayerResultsChanged;
+        MultiplayerApi.PlayerJoined -= OnPlayerJoined;
+        MultiplayerApi.PlayerLeft -= OnPlayerLeft;
+        RacingApi.RoundEnded -= OnRoundEnded;
+        FavoritePlayerChangedNotifier.FavoritePlayersChanged -= OnFavoritePlayersChanged;
+        CommandVotingResult.OnHandle -= OnVotingFinished;
     }
 
-    private void OnVotingResult()
+    private void OnPlayerJoined(ZeepkistNetworkPlayer player)
     {
-        if (_voteYes >= _voteNo)
+        UpdateVotes();
+    }
+
+    private void OnPlayerLeft(ZeepkistNetworkPlayer player)
+    {
+        UpdateVotes();
+    }
+
+    private void OnFavoritePlayersChanged()
+    {
+        UpdateVotes();
+    }
+
+    private void OnRoundEnded()
+    {
+        OnVotingFinished();
+        StateMachine.TransitionTo(new StatePostVoting(StateMachine));
+    }
+
+    private void OnVotingFinished()
+    {
+        if (ClutchVotes < KickVotes)
         {
-            ChatApi.SendMessage(ParseMessage(StateMachine.Plugin.ClutchMessage.Value));
-            ChatApi.SendMessage(ParseMessage("/servermessage green 0 " +
-                                             StateMachine.Plugin.ResultServerMessage.Value));
+            ChatApi.SendMessage(ParseMessage(Plugin.Instance.KickMessage.Value));
+            ChatApi.SendMessage(ParseMessage("/servermessage red 0 " + Plugin.Instance.ResultServerMessage.Value));
         }
         else
         {
-            ChatApi.SendMessage(ParseMessage(StateMachine.Plugin.KickMessage.Value));
-            ChatApi.SendMessage(ParseMessage("/servermessage red 0 " + StateMachine.Plugin.ResultServerMessage.Value));
+            ChatApi.SendMessage(ParseMessage(Plugin.Instance.ClutchMessage.Value));
+            ChatApi.SendMessage(ParseMessage("/servermessage green 0 " + Plugin.Instance.ResultServerMessage.Value));
         }
 
-        StateMachine.SwitchState(new StateAfterVoting(StateMachine));
+        StateMachine.TransitionTo(new StatePostVoting(StateMachine));
     }
 
-    private VotingLevel FetchVotingLevel(List<VotingLevel> votingLevels)
+    private void OnPlayerResultsChanged(ZeepkistNetworkPlayer player)
     {
-        foreach (VotingLevel votingLevel in votingLevels)
+        UpdateVotes();
+    }
+
+    private void UpdateVotes()
+    {
+        ResetVoteCounts();
+        foreach (LeaderboardItem player in ZeepkistNetwork.Leaderboard)
         {
-            if (votingLevel.LevelUid == PlayerManager.Instance.currentMaster.GlobalLevel.UID)
+            if (IsNeutral(player.SteamID))
             {
-                return votingLevel;
+                continue;
+            }
+
+            if (player.Time >= CurrentVotingLevel.KickFinishTime)
+            {
+                KickVotes++;
+            }
+            else if (player.Time >= CurrentVotingLevel.ClutchFinishTime)
+            {
+                ClutchVotes++;
+            }
+            else
+            {
+                KickNonNeutralPlayer(player);
             }
         }
 
-        MessengerApi.LogError("No Voting-Level found! To set a Voting-Level go to a custom Voting-Level and type '/koc save'.", 5F);
-        return null;
+        UpdateVotingResultsMessage();
     }
 
-    private int GetNeutrals()
+    private void ResetVoteCounts()
     {
-        var count = 0;
-        foreach ((uint key, ZeepkistNetworkPlayer zeepkistNetworkPlayer) in ZeepkistNetwork.Players)
+        ClutchVotes = 0;
+        KickVotes = 0;
+    }
+
+    private void UpdateVotingResultsMessage()
+    {
+        ChatApi.SendMessage($"/servermessage yellow 0 " +
+                            $"{StateMachine.CurrentSubmissionLevel.Name} by {StateMachine.CurrentSubmissionLevel.Author}<br>" +
+                            $"Kick: {Math.Max(0, KickVotes)} | Clutch: {Math.Max(0, ClutchVotes)} | Votes Left: {Math.Max(0, GetTotalVotes())}");
+    }
+
+
+    private int CountFavoritesInLobby()
+    {
+        return ZeepkistNetwork.Players.CountFavoritesInLobby(ZeepkistNetwork.CurrentLobby.Favorites);
+    }
+
+    private int CountNeutrals()
+    {
+        return 0; // Placeholder -> If sometime Neutrals come into play we will implement this. For now it "adds the host"
+    }
+
+    private bool IsNeutral(ulong steamID)
+    {
+        return steamID == ZeepkistNetwork.LocalPlayer.SteamID ||
+               steamID == StateMachine.CurrentSubmissionLevel.AuthorSteamId ||
+               ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
+    }
+
+    private void KickNonNeutralPlayer(LeaderboardItem item)
+    {
+        if (!IsNeutral(item.SteamID))
         {
-            if (ZeepkistNetwork.CurrentLobby.Favorites.Contains(zeepkistNetworkPlayer.SteamID))
+            ZeepkistNetworkPlayer player = ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
+            if (player != null)
             {
-                count++;
+                ZeepkistNetwork.KickPlayer(player);
             }
         }
-        return count;
-    }
-
-    private bool IsFavorite(ulong steamID)
-    {
-        if (steamID == ZeepkistNetwork.LocalPlayer.SteamID)
-        {
-            return true;
-        }
-
-        if (steamID == StateMachine.SubmissionLevel.AuthorSteamId)
-        {
-            return true;
-        }
-
-        return ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
     }
 
     private string ParseMessage(string message)
     {
         return message
-                .Replace("%a", StateMachine.SubmissionLevel.Author)
-                .Replace("%l", StateMachine.SubmissionLevel.Name)
-                .Replace("%r", VoteResult())
-                .Replace("%c", _voteYes.ToString())
-                .Replace("%k", _voteNo.ToString())
-                .Replace("%t", _voteTotal.ToString())
-            ;
+            .Replace("%a", StateMachine.CurrentSubmissionLevel.Author)
+            .Replace("%l", StateMachine.CurrentSubmissionLevel.Name)
+            .Replace("%r", VotingResultString())
+            .Replace("%c", ClutchVotes.ToString())
+            .Replace("%k", KickVotes.ToString())
+            .Replace("%t", GetTotalVotes().ToString());
     }
 
-    private string VoteResult()
+    private string VotingResultString()
     {
-        return _voteYes >= _voteNo ? "Clutch" : "Kick";
+        return ClutchVotes >= KickVotes ? "Clutch" : "Kick";
     }
 
-
-    private void PlayerResultsChanged(ZeepkistNetworkPlayer player)
+    private int GetTotalVotes()
     {
-        _voteYes = 0;
-        _voteNo = 0;
-        _voteTotal = ZeepkistNetwork.Players.Count - GetNeutrals();
+        return CountPlayersInLobby() - CountFavoritesInLobby() - CountNeutrals() - KickVotes - ClutchVotes;
+    }
 
-        _currentVotingLevel = FetchVotingLevel(StateMachine.Plugin.GetVotingLevels());
-        foreach (LeaderboardItem item in ZeepkistNetwork.Leaderboard)
-        {
-            if (item.Time >= _currentVotingLevel.KickFinishTime)
-            {
-                _voteNo += 1;
-                _voteTotal -= 1;
-            }
-            else if (item.Time >= _currentVotingLevel.ClutchFinishTime)
-            {
-                _voteYes += 1;
-                _voteTotal -= 1;
-            }
-            else
-            {
-                if (!IsFavorite(item.SteamID))
-                {
-                    ZeepkistNetworkPlayer zeepkistNetworkPlayer =
-                        ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
-                    ZeepkistNetwork.KickPlayer(zeepkistNetworkPlayer);
-                }
-            }
-        }
-
-
-        ChatApi.SendMessage(
-            $"/servermessage yellow 0 {StateMachine.SubmissionLevel.Name} by {StateMachine.SubmissionLevel.Author}<br>  Kick: {Math.Max(0, _voteNo)} | Clutch: {Math.Max(0, _voteYes)} | Votes Left: {Math.Max(0, _voteTotal)} ");
+    private int CountPlayersInLobby()
+    {
+        return ZeepkistNetwork.Players.Count;
     }
 }

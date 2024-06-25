@@ -1,5 +1,7 @@
 ﻿using KoC.Data;
+using KoC.Utils;
 using ZeepkistClient;
+using ZeepSDK.Chat;
 using ZeepSDK.Racing;
 
 namespace KoC.States;
@@ -14,52 +16,41 @@ public class StateRegisterSubmission : BaseState
     {
         RacingApi.LevelLoaded += OnLevelLoaded;
         RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel, ZeepkistNetwork.CurrentLobby.WorkshopID));
+        ChatApi.SendMessage($"/joinmessage orange {Plugin.Instance.JoinMessageNormal.Value}");
     }
 
     private void OnLevelLoaded()
     {
-        RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel,ZeepkistNetwork.CurrentLobby.WorkshopID));
+        RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel, ZeepkistNetwork.CurrentLobby.WorkshopID));
     }
 
     public override void Exit()
     {
         RacingApi.LevelLoaded -= OnLevelLoaded;
     }
-
-    private bool IsVotingLevel(string currentLevelUid)
-    {
-        foreach (VotingLevel votingLevel in StateMachine.VotingLevels)
-        {
-            if (votingLevel.LevelUid == currentLevelUid)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    
 
     private void RegisterSubmissionLevel(SubmissionLevel submissionLevel)
     {
         if (IsAdventureLevel())
         {
-            StateMachine.Plugin.Messenger.LogWarning(
+            Plugin.Instance.Messenger.LogWarning(
                 "Submission-Level expected but got Adventure-Level. Please Skip to a different level that is no Adventure-Level.",
                 5F);
+            return;
         }
-        else if (IsVotingLevel(PlayerManager.Instance.currentMaster.GlobalLevel.UID))
+        if (LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, StateMachine.VotingLevels))
         {
-            StateMachine.Plugin.Messenger.LogWarning(
+            Plugin.Instance.Messenger.LogWarning(
                 "Submission-Level expected but got Voting-Level. Please Skip to a different level that is no Voting-Level.",
                 5F);
+            return;
         }
-        else
-        {
-            StateMachine.SubmissionLevel = submissionLevel;
-            StateMachine.Plugin.Messenger.LogSuccess(
-                $"Submission-Level registered for Voting: '{StateMachine.SubmissionLevel.Name}'", 5F);
-            StateMachine.SwitchState(new StateBeforeVoting(StateMachine));
-        }
+ 
+            StateMachine.CurrentSubmissionLevel = submissionLevel;
+            Plugin.Instance.Messenger.LogSuccess($"Submission-Level registered for Voting: '{StateMachine.CurrentSubmissionLevel.Name}'", 5F);
+            StateMachine.TransitionTo(new StatePreVoting(StateMachine));
+        
     }
 
     private bool IsAdventureLevel()

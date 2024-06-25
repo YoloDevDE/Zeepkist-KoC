@@ -8,7 +8,7 @@ public class SubmissionLevel
         Name = globalLevel.Name;
         Author = globalLevel.Author;
         WorkshopId = workshopId;
-        AuthorSteamId = globalLevel.WorkshopID == 0 ? 0 : WorkshopManager.Instance.WorkshopInfoDictionary[globalLevel.WorkshopID].authorSteamID;
+        AuthorSteamId = workshopId == 0 ? 0 : WorkshopManager.Instance.WorkshopInfoDictionary[workshopId].authorSteamID;
     }
 
     public ulong WorkshopId { get; set; }
