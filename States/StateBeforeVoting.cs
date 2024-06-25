@@ -16,7 +16,7 @@ public class StateBeforeVoting : BaseState
     }
 
     private void OnLevelLoaded()
-    {  
+    {
         if (IsAdventureLevel(PlayerManager.Instance.currentMaster.GlobalLevel.WorkshopID))
         {
             StateMachine.Plugin.Messenger.LogWarning(
@@ -24,7 +24,8 @@ public class StateBeforeVoting : BaseState
                 5F);
         }
         else if (IsVotingLevel(PlayerManager.Instance.currentMaster.GlobalLevel.UID))
-        {            StateMachine.Plugin.Messenger.LogSuccess("Voting started");
+        {
+            StateMachine.Plugin.Messenger.LogSuccess("Voting started");
             StateMachine.SwitchState(new StateVoting(StateMachine));
         }
         else
@@ -37,14 +38,18 @@ public class StateBeforeVoting : BaseState
 
     private bool IsAdventureLevel(ulong currentWorkshopID)
     {
-        return currentWorkshopID == 0;
+        return PlayerManager.Instance.currentMaster.GlobalLevel.UseAvonturenLevel;
     }
 
     private bool IsVotingLevel(string currentLevelUid)
     {
-        foreach (var votingLevel in StateMachine.VotingLevels)
+        foreach (VotingLevel votingLevel in StateMachine.VotingLevels)
+        {
             if (votingLevel.LevelUid == currentLevelUid)
+            {
                 return true;
+            }
+        }
 
         return false;
     }

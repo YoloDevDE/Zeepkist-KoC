@@ -10,8 +10,8 @@ public class StateDisabled : BaseState
 
     public override void Enter()
     {
-        ChatApi.SendMessage($"/joinmessage off");
-        ChatApi.SendMessage($"/servermessage remove");
+        ChatApi.SendMessage("/joinmessage off");
+        ChatApi.SendMessage("/servermessage remove");
         StateMachine.Enabled = false;
     }
 

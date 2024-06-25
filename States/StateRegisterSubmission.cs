@@ -1,5 +1,5 @@
 ﻿using KoC.Data;
-using ZeepSDK.Chat;
+using ZeepkistClient;
 using ZeepSDK.Racing;
 
 namespace KoC.States;
@@ -13,12 +13,12 @@ public class StateRegisterSubmission : BaseState
     public override void Enter()
     {
         RacingApi.LevelLoaded += OnLevelLoaded;
-        RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel));
+        RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel, ZeepkistNetwork.CurrentLobby.WorkshopID));
     }
 
     private void OnLevelLoaded()
     {
-        RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel));
+        RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel,ZeepkistNetwork.CurrentLobby.WorkshopID));
     }
 
     public override void Exit()
@@ -28,9 +28,13 @@ public class StateRegisterSubmission : BaseState
 
     private bool IsVotingLevel(string currentLevelUid)
     {
-        foreach (var votingLevel in StateMachine.VotingLevels)
+        foreach (VotingLevel votingLevel in StateMachine.VotingLevels)
+        {
             if (votingLevel.LevelUid == currentLevelUid)
+            {
                 return true;
+            }
+        }
 
         return false;
     }
@@ -60,6 +64,6 @@ public class StateRegisterSubmission : BaseState
 
     private bool IsAdventureLevel()
     {
-        return PlayerManager.Instance.currentMaster.GlobalLevel.WorkshopID == 0;
+        return PlayerManager.Instance.currentMaster.GlobalLevel.UseAvonturenLevel;
     }
 }

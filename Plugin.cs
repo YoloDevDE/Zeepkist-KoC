@@ -71,8 +71,8 @@ public class Plugin : BaseUnityPlugin
 
     public void SyncVotingLevelsConfigWithJson()
     {
-        var votingLevels = GetVotingLevels();
-        foreach (var votingLevel in votingLevels)
+        List<VotingLevel> votingLevels = GetVotingLevels();
+        foreach (VotingLevel votingLevel in votingLevels)
         {
             //  string section, 
             //  string key, 
@@ -85,12 +85,12 @@ public class Plugin : BaseUnityPlugin
 
     public List<VotingLevel> GetVotingLevels()
     {
-        var modStorage = StorageApi.CreateModStorage(this);
-        var jsonWrapper = new VotingLevelsJsonWrapper();
+        IModStorage modStorage = StorageApi.CreateModStorage(this);
+        VotingLevelsJsonWrapper jsonWrapper = new VotingLevelsJsonWrapper();
 
         try
         {
-            var json = modStorage.LoadFromJson("VotingLevels");
+            object json = modStorage.LoadFromJson("VotingLevels");
             Logger.LogInfo(json);
             jsonWrapper = JsonConvert.DeserializeObject<VotingLevelsJsonWrapper>(json.ToString());
             Logger.LogInfo($"{jsonWrapper}");
@@ -108,15 +108,15 @@ public class Plugin : BaseUnityPlugin
 
     private void SaveCurrentLevelAsVotingLevelToJson()
     {
-        var modStorage = StorageApi.CreateModStorage(this);
+        IModStorage modStorage = StorageApi.CreateModStorage(this);
 
-        var currentLevelName = PlayerManager.Instance.currentMaster.GlobalLevel.Name;
-        var currentLevelUid = PlayerManager.Instance.currentMaster.GlobalLevel.UID;
-        var jsonWrapper = new VotingLevelsJsonWrapper();
+        string currentLevelName = PlayerManager.Instance.currentMaster.GlobalLevel.Name;
+        string currentLevelUid = PlayerManager.Instance.currentMaster.GlobalLevel.UID;
+        VotingLevelsJsonWrapper jsonWrapper = new VotingLevelsJsonWrapper();
 
         try
         {
-            var json = modStorage.LoadFromJson("VotingLevels");
+            object json = modStorage.LoadFromJson("VotingLevels");
             Logger.LogInfo(json);
             jsonWrapper = JsonConvert.DeserializeObject<VotingLevelsJsonWrapper>(json.ToString());
             Logger.LogInfo($"{jsonWrapper}");
@@ -128,7 +128,7 @@ public class Plugin : BaseUnityPlugin
             modStorage.SaveToJson("VotingLevels", jsonWrapper);
         }
 
-        var votingLevel = new VotingLevel
+        VotingLevel votingLevel = new VotingLevel
         {
             KickFinishTime = 0,
             ClutchFinishTime = 0,

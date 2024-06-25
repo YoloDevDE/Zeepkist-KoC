@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using KoC.Commands;
 using ZeepkistClient;
+using ZeepkistNetworking;
 using ZeepSDK.Chat;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
@@ -71,9 +72,13 @@ public class StateVoting : BaseState
 
     private VotingLevel FetchVotingLevel(List<VotingLevel> votingLevels)
     {
-        foreach (var votingLevel in votingLevels)
+        foreach (VotingLevel votingLevel in votingLevels)
+        {
             if (votingLevel.LevelUid == PlayerManager.Instance.currentMaster.GlobalLevel.UID)
+            {
                 return votingLevel;
+            }
+        }
 
         MessengerApi.LogError("No Voting-Level found! To set a Voting-Level go to a custom Voting-Level and type '/koc save'.", 5F);
         return null;
@@ -87,9 +92,15 @@ public class StateVoting : BaseState
     private bool IsFavorite(ulong steamID)
     {
         if (steamID == ZeepkistNetwork.LocalPlayer.SteamID)
+        {
             return true;
+        }
+
         if (steamID == StateMachine.SubmissionLevel.AuthorSteamId)
+        {
             return true;
+        }
+
         return ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
     }
 
@@ -118,7 +129,8 @@ public class StateVoting : BaseState
         _voteTotal = ZeepkistNetwork.Players.Count - GetNeutrals();
 
         _currentVotingLevel = FetchVotingLevel(StateMachine.Plugin.GetVotingLevels());
-        foreach (var item in ZeepkistNetwork.Leaderboard)
+        foreach (LeaderboardItem item in ZeepkistNetwork.Leaderboard)
+        {
             if (item.Time >= _currentVotingLevel.KickFinishTime)
             {
                 _voteNo += 1;
@@ -133,12 +145,12 @@ public class StateVoting : BaseState
             {
                 if (!IsFavorite(item.SteamID))
                 {
-                    var zeepkistNetworkPlayer =
+                    ZeepkistNetworkPlayer zeepkistNetworkPlayer =
                         ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
                     ZeepkistNetwork.KickPlayer(zeepkistNetworkPlayer);
                 }
-
             }
+        }
 
 
         ChatApi.SendMessage(

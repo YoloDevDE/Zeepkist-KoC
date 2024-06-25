@@ -1,6 +1,5 @@
 ﻿using System;
 using ZeepSDK.ChatCommands;
-using ZeepSDK.Messaging;
 
 namespace KoC.Commands;
 
