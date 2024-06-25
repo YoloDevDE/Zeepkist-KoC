@@ -7,6 +7,7 @@ public class StateDisabled : BaseState
     public StateDisabled(StateMachine stateMachine) : base(stateMachine)
     {
     }
+    
 
     public override void Enter()
     {

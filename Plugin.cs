@@ -5,6 +5,8 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using KoC.Commands;
 using Newtonsoft.Json;
+using Steamworks.Data;
+using UnityEngine.UIElements;
 using ZeepSDK.ChatCommands;
 using ZeepSDK.Messaging;
 using ZeepSDK.Storage;
@@ -32,7 +34,7 @@ public class Plugin : BaseUnityPlugin
         Messenger = MessengerApi.CreateTaggedMessenger("KoC");
         RegisterCommands();
         _stateMachine = new StateMachine(this);
-        SaveLevelFromLobby.OnHandle += SaveCurrentLevelAsVotingLevelToJson;
+        CommandCreateVotingLevel.OnHandle += SaveCurrentLevelAsVotingLevelToJson;
         InitConfigBindings();
         // SyncVotingLevelsConfigWithJson();
 
@@ -62,11 +64,11 @@ public class Plugin : BaseUnityPlugin
 
     private void RegisterCommands()
     {
-        ChatCommandApi.RegisterLocalChatCommand<EnablePlugin>();
-        ChatCommandApi.RegisterLocalChatCommand<DisablePlugin>();
-        ChatCommandApi.RegisterLocalChatCommand<EndVoting>();
-        ChatCommandApi.RegisterLocalChatCommand<SaveLevelFromLobby>();
-        ChatCommandApi.RegisterLocalChatCommand<RegisterMapForVotingManually>();
+        ChatCommandApi.RegisterLocalChatCommand<CommandStart>();
+        ChatCommandApi.RegisterLocalChatCommand<CommandStop>();
+        ChatCommandApi.RegisterLocalChatCommand<CommandVotingResult>();
+        ChatCommandApi.RegisterLocalChatCommand<CommandCreateVotingLevel>();
+        ChatCommandApi.RegisterLocalChatCommand<CommandRegisterSubmissionLevel>();
     }
 
     public void SyncVotingLevelsConfigWithJson()
@@ -82,6 +84,7 @@ public class Plugin : BaseUnityPlugin
             Config.Bind(votingLevel.LevelName, "Kick", votingLevel.KickFinishTime, ConfigDescription.Empty);
         }
     }
+    
 
     public List<VotingLevel> GetVotingLevels()
     {

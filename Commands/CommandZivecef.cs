@@ -3,12 +3,12 @@ using ZeepSDK.ChatCommands;
 
 namespace KoC.Commands;
 
-public class EndVoting : ILocalChatCommand
+public class CommandZivecef : ILocalChatCommand
 {
     public static Action OnHandle;
     public string Prefix => "/";
-    public string Command => "koc result";
-    public string Description => "";
+    public string Command => "zivecef";
+    public string Description => "MEGAKIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIICK!!!";
 
     public void Handle(string arguments)
     {

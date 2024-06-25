@@ -3,12 +3,12 @@ using ZeepSDK.ChatCommands;
 
 namespace KoC.Commands;
 
-public class SaveLevelFromLobby : ILocalChatCommand
+public class CommandVotingResult : ILocalChatCommand
 {
     public static Action OnHandle;
     public string Prefix => "/";
-    public string Command => "koc save";
-    public string Description => "";
+    public string Command => "koc result";
+    public string Description => "Ends the Votingphase and otherwise will not react";
 
     public void Handle(string arguments)
     {

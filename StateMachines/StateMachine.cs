@@ -19,8 +19,8 @@ public class StateMachine
     {
         Plugin = plugin;
         VotingLevels = Plugin.GetVotingLevels();
-        EnablePlugin.OnHandle += Enable;
-        DisablePlugin.OnHandle += Disable;
+        CommandStart.OnHandle += Enable;
+        CommandStop.OnHandle += Disable;
         State = new StateDisabled(this);
         State.Enter();
     }

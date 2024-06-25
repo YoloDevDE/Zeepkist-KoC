@@ -11,13 +11,13 @@ public class StateBeforeVoting : BaseState
 
     public override void Enter()
     {
-        RegisterMapForVotingManually.OnHandle += RegisterSubmissionLevel;
+        CommandRegisterSubmissionLevel.OnHandle += RegisterSubmissionLevel;
         RacingApi.LevelLoaded += OnLevelLoaded;
     }
 
     private void OnLevelLoaded()
     {
-        if (IsAdventureLevel(PlayerManager.Instance.currentMaster.GlobalLevel.WorkshopID))
+        if (IsAdventureLevel())
         {
             StateMachine.Plugin.Messenger.LogWarning(
                 "Voting-Level expected but got Adventure-Level. Please Skip to a different level that is no Adventure-Level.",
@@ -36,7 +36,7 @@ public class StateBeforeVoting : BaseState
         }
     }
 
-    private bool IsAdventureLevel(ulong currentWorkshopID)
+    private bool IsAdventureLevel()
     {
         return PlayerManager.Instance.currentMaster.GlobalLevel.UseAvonturenLevel;
     }
@@ -61,7 +61,7 @@ public class StateBeforeVoting : BaseState
 
     public override void Exit()
     {
-        RegisterMapForVotingManually.OnHandle -= RegisterSubmissionLevel;
+        CommandRegisterSubmissionLevel.OnHandle -= RegisterSubmissionLevel;
         RacingApi.LevelLoaded -= OnLevelLoaded;
     }
 }

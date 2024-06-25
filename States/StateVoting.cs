@@ -28,7 +28,7 @@ public class StateVoting : BaseState
         ZeepkistNetwork.PlayerResultsChanged -= PlayerResultsChanged;
         MultiplayerApi.PlayerJoined -= PlayerResultsChanged;
         MultiplayerApi.PlayerLeft -= PlayerResultsChanged;
-        EndVoting.OnHandle -= OnVotingResult;
+        CommandVotingResult.OnHandle -= OnVotingResult;
         RacingApi.RoundEnded -= OnGameStateChange;
 
         ChatApi.SendMessage("/joinmessage orange " + StateMachine.Plugin.JoinMessageNormal.Value);
@@ -40,7 +40,7 @@ public class StateVoting : BaseState
         ZeepkistNetwork.PlayerResultsChanged += PlayerResultsChanged;
         MultiplayerApi.PlayerJoined += PlayerResultsChanged;
         MultiplayerApi.PlayerLeft += PlayerResultsChanged;
-        EndVoting.OnHandle += OnVotingResult;
+        CommandVotingResult.OnHandle += OnVotingResult;
         RacingApi.RoundEnded += OnGameStateChange;
         PlayerResultsChanged(null);
         ChatApi.SendMessage(StateMachine.Plugin.AutoMessage.Value);
@@ -86,7 +86,15 @@ public class StateVoting : BaseState
 
     private int GetNeutrals()
     {
-        return ZeepkistNetwork.CurrentLobby.Favorites.Count;
+        var count = 0;
+        foreach ((uint key, ZeepkistNetworkPlayer zeepkistNetworkPlayer) in ZeepkistNetwork.Players)
+        {
+            if (ZeepkistNetwork.CurrentLobby.Favorites.Contains(zeepkistNetworkPlayer.SteamID))
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     private bool IsFavorite(ulong steamID)
