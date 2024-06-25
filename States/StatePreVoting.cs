@@ -1,5 +1,4 @@
 ﻿using KoC.Commands;
-using KoC.Data;
 using KoC.Utils;
 using ZeepkistClient;
 using ZeepSDK.Racing;
@@ -24,7 +23,7 @@ public class StatePreVoting : BaseState
         {
             Plugin.Instance.Messenger
                 .LogWarning(
-                    "Voting-Level expected but got Adventure-Level. Please Skip to a different level that is no Adventure-Level.", 
+                    "Voting-Level expected but got Adventure-Level. Please Skip to a different level that is no Adventure-Level.",
                     5F);
             return;
         }
@@ -33,7 +32,7 @@ public class StatePreVoting : BaseState
         {
             Plugin.Instance.Messenger
                 .LogWarning(
-                    "Voting-Level expected but got different Submission-Level. If that was a mistake you can just skip to a Voting-Level. If you want the current level as a submission type '/koc register' in the chat", 
+                    "Voting-Level expected but got different Submission-Level. If that was a mistake you can just skip to a Voting-Level. If you want the current level as a submission type '/koc register' in the chat",
                     10F);
             return;
         }
@@ -41,8 +40,6 @@ public class StatePreVoting : BaseState
         Plugin.Instance.Messenger.LogSuccess("Voting started");
         StateMachine.TransitionTo(new StateVoting(StateMachine));
     }
-
-    
 
 
     private void RegisterSubmissionLevel()

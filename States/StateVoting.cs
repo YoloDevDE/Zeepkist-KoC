@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KoC.Commands;
 using KoC.Data;
 using KoC.Utils;
@@ -100,7 +99,7 @@ public class StateVoting : BaseState
         ResetVoteCounts();
         foreach (LeaderboardItem player in ZeepkistNetwork.Leaderboard)
         {
-            if (IsNeutral(player.SteamID))
+            if (StateMachine.IsNeutral(player.SteamID))
             {
                 continue;
             }
@@ -115,7 +114,7 @@ public class StateVoting : BaseState
             }
             else
             {
-                KickNonNeutralPlayer(player);
+                StateMachine.KickNonNeutralPlayer(player);
             }
         }
 
@@ -146,24 +145,6 @@ public class StateVoting : BaseState
         return 0; // Placeholder -> If sometime Neutrals come into play we will implement this. For now it "adds the host"
     }
 
-    private bool IsNeutral(ulong steamID)
-    {
-        return steamID == ZeepkistNetwork.LocalPlayer.SteamID ||
-               steamID == StateMachine.CurrentSubmissionLevel.AuthorSteamId ||
-               ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
-    }
-
-    private void KickNonNeutralPlayer(LeaderboardItem item)
-    {
-        if (!IsNeutral(item.SteamID))
-        {
-            ZeepkistNetworkPlayer player = ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
-            if (player != null)
-            {
-                ZeepkistNetwork.KickPlayer(player);
-            }
-        }
-    }
 
     private string ParseMessage(string message)
     {

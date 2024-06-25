@@ -28,7 +28,7 @@ public class StateRegisterSubmission : BaseState
     {
         RacingApi.LevelLoaded -= OnLevelLoaded;
     }
-    
+
 
     private void RegisterSubmissionLevel(SubmissionLevel submissionLevel)
     {
@@ -39,6 +39,7 @@ public class StateRegisterSubmission : BaseState
                 5F);
             return;
         }
+
         if (LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, StateMachine.VotingLevels))
         {
             Plugin.Instance.Messenger.LogWarning(
@@ -46,11 +47,10 @@ public class StateRegisterSubmission : BaseState
                 5F);
             return;
         }
- 
-            StateMachine.CurrentSubmissionLevel = submissionLevel;
-            Plugin.Instance.Messenger.LogSuccess($"Submission-Level registered for Voting: '{StateMachine.CurrentSubmissionLevel.Name}'", 5F);
-            StateMachine.TransitionTo(new StatePreVoting(StateMachine));
-        
+
+        StateMachine.CurrentSubmissionLevel = submissionLevel;
+        Plugin.Instance.Messenger.LogSuccess($"Submission-Level registered for Voting: '{StateMachine.CurrentSubmissionLevel.Name}'", 5F);
+        StateMachine.TransitionTo(new StatePreVoting(StateMachine));
     }
 
     private bool IsAdventureLevel()

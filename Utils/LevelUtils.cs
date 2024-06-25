@@ -10,7 +10,8 @@ public static class LevelUtils
     {
         return votingLevels.Any(vl => vl.LevelUid == currentLevelUid);
     }
-    public static  bool IsAdventureLevel()
+
+    public static bool IsAdventureLevel()
     {
         return PlayerManager.Instance.currentMaster.GlobalLevel.UseAvonturenLevel;
     }

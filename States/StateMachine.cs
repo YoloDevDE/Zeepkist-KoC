@@ -3,6 +3,8 @@ using System.Linq;
 using KoC.Commands;
 using KoC.Data;
 using KoC.States;
+using ZeepkistClient;
+using ZeepkistNetworking;
 using ZeepSDK.Chat;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
@@ -57,6 +59,25 @@ public class StateMachine
     public VotingLevel GetVotingLevelByUid(string uid)
     {
         return VotingLevels.FirstOrDefault(level => level.LevelUid == uid);
+    }
+
+    public bool IsNeutral(ulong steamID)
+    {
+        return steamID == ZeepkistNetwork.LocalPlayer.SteamID ||
+               steamID == CurrentSubmissionLevel.AuthorSteamId ||
+               ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
+    }
+
+    public void KickNonNeutralPlayer(LeaderboardItem item)
+    {
+        if (!IsNeutral(item.SteamID))
+        {
+            ZeepkistNetworkPlayer player = ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
+            if (player != null)
+            {
+                ZeepkistNetwork.KickPlayer(player);
+            }
+        }
     }
 
     public void TransitionTo(BaseState state)
