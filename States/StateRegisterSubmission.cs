@@ -1,4 +1,6 @@
-﻿using KoC.Data;
+﻿using System;
+using System.Threading.Tasks;
+using KoC.Data;
 using KoC.Utils;
 using ZeepkistClient;
 using ZeepSDK.Chat;
@@ -15,20 +17,57 @@ public class StateRegisterSubmission : BaseState
     public override void Enter()
     {
         RacingApi.LevelLoaded += OnLevelLoaded;
-        RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel, ZeepkistNetwork.CurrentLobby.WorkshopID));
+        OnLevelLoaded();
         ChatApi.SendMessage($"/joinmessage orange {Plugin.Instance.JoinMessageNormal.Value}");
     }
 
-    private void OnLevelLoaded()
+    private async void OnLevelLoaded()
     {
-        RegisterSubmissionLevel(new SubmissionLevel(PlayerManager.Instance.currentMaster.GlobalLevel, ZeepkistNetwork.CurrentLobby.WorkshopID));
+        const int maxRetries = 5;
+        int attempt = 0;
+
+        while (attempt < maxRetries)
+        {
+            try
+            {
+                string levelUid = ZeepkistNetwork.CurrentLobby.LevelUID;
+                ulong workshopId = ZeepkistNetwork.CurrentLobby.WorkshopID;
+                string authorName = PlayerManager.Instance.currentMaster.GlobalLevel.Author;
+                string levelName = PlayerManager.Instance.currentMaster.GlobalLevel.Name;
+
+                SubmissionLevel submissionLevel = new SubmissionLevel(
+                    levelUid: levelUid,
+                    workshopId: workshopId,
+                    levelName: levelName,
+                    authorName: authorName
+                );
+                await submissionLevel.InitializeAsync(); // Asynchrone Initialisierung ohne Blockierung
+
+                RegisterSubmissionLevel(submissionLevel);
+                break; // Erfolgreich, Schleife beenden
+            }
+            catch (Exception e)
+            {
+                attempt++;
+                Plugin.Instance.Messenger.LogError($"Attempt {attempt} to register submission level failed: {e.Message}", 5F);
+
+                if (attempt >= maxRetries)
+                {
+                    Plugin.Instance.Messenger.LogError("Max retries reached. Unable to register submission level.", 5F);
+                }
+                else
+                {
+                    // Kurze Verzögerung zwischen den Versuchen, um das Problem zu beheben
+                    await Task.Delay(1000);
+                }
+            }
+        }
     }
 
     public override void Exit()
     {
         RacingApi.LevelLoaded -= OnLevelLoaded;
     }
-
 
     private void RegisterSubmissionLevel(SubmissionLevel submissionLevel)
     {

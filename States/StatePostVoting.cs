@@ -26,7 +26,10 @@ public class StatePostVoting : BaseState
     {
         foreach (LeaderboardItem item in ZeepkistNetwork.Leaderboard)
         {
-            StateMachine.KickNonNeutralPlayer(item);
+            if (item.Time < StateMachine.CurrentVotingLevel.ClutchFinishTime)
+            {
+                StateMachine.KickNonNeutralPlayer(item);
+            }
         }
     }
 

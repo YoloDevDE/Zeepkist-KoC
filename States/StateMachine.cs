@@ -3,9 +3,9 @@ using System.Linq;
 using KoC.Commands;
 using KoC.Data;
 using KoC.States;
+using KoC.Utils;
 using ZeepkistClient;
 using ZeepkistNetworking;
-using ZeepSDK.Chat;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
 
@@ -34,12 +34,19 @@ public class StateMachine
         {
             MultiplayerApi.DisconnectedFromGame += Disable;
             TransitionTo(new StateRegisterSubmission(this));
-            ChatApi.SendMessage("KoC started");
+            ChatUtils.AddNewChatMessage(StartMessage());
         }
         else
         {
             Plugin.Instance.Messenger.LogWarning("Already started");
         }
+    }
+
+    private ZeepkistChatMessage StartMessage()
+    {
+        ZeepkistChatMessage msg = new ZeepkistChatMessage();
+        msg.Message = "<#00AA00><i>Kick or Clutch started!</i></color>";
+        return msg;
     }
 
     public void Disable()
@@ -56,6 +63,8 @@ public class StateMachine
         }
     }
 
+
+
     public VotingLevel GetVotingLevelByUid(string uid)
     {
         return VotingLevels.FirstOrDefault(level => level.LevelUid == uid);
@@ -63,9 +72,7 @@ public class StateMachine
 
     public bool IsNeutral(ulong steamID)
     {
-        return steamID == ZeepkistNetwork.LocalPlayer.SteamID ||
-               steamID == CurrentSubmissionLevel.AuthorSteamId ||
-               ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
+        return steamID == ZeepkistNetwork.LocalPlayer.SteamID || steamID == CurrentSubmissionLevel.AuthorSteamId || ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
     }
 
     public void KickNonNeutralPlayer(LeaderboardItem item)

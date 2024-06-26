@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using HarmonyLib;
 using KoC.Commands;
 using KoC.Data;
@@ -18,6 +19,7 @@ public class Plugin : BaseUnityPlugin
 {
     private Harmony _harmony;
     public ITaggedMessenger Messenger;
+    public ManualLogSource MyLogger;
     public StateMachine Machine { get; private set; }
 
     public static Plugin Instance { get; private set; }
@@ -33,6 +35,7 @@ public class Plugin : BaseUnityPlugin
         _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
         _harmony.PatchAll();
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
+        MyLogger = Logger;
     }
 
     private void Start()

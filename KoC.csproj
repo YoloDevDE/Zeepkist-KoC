@@ -4,7 +4,7 @@
         <TargetFramework>net472</TargetFramework>
         <AssemblyName>KoC</AssemblyName>
         <Description>Kick or Clutch Mod</Description>
-        <Version>1.16.1</Version>
+        <Version>1.16.2</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
@@ -25,7 +25,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
         <PackageReference Include="UnityEngine.Modules" Version="2021.3.10" IncludeAssets="compile"/>
         <PackageReference Include="Zeepkist.GameLibs" Version="16.999.397-alpha"/>
-        <PackageReference Include="ZeepSDK" Version="1.31.3-alpha"/>
+        <PackageReference Include="ZeepSDK" Version="1.32.0"/>
     </ItemGroup>
 
     <!-- Conditional Dependencies -->
