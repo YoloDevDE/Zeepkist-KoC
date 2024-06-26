@@ -4,7 +4,7 @@
         <TargetFramework>net472</TargetFramework>
         <AssemblyName>KoC</AssemblyName>
         <Description>Kick or Clutch Mod</Description>
-        <Version>1.16.2</Version>
+        <Version>1.16.3</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
