@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using ZeepkistClient;
-using ZeepSDK.Messaging;
 
 namespace KoC.Utils;
 
@@ -21,5 +19,4 @@ public class ChatUtils
             chatMessageReceived(message);
         }
     }
-    
 }

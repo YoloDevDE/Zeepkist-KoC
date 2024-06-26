@@ -6,6 +6,8 @@ using BepInEx.Logging;
 using HarmonyLib;
 using KoC.Commands;
 using KoC.Data;
+using KoC.etc;
+using KoC.States;
 using Newtonsoft.Json;
 using ZeepSDK.ChatCommands;
 using ZeepSDK.Messaging;

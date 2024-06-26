@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using KoC.Data;
 
-namespace KoC;
+namespace KoC.etc;
 
 public class VotingLevelsJsonWrapper
 {

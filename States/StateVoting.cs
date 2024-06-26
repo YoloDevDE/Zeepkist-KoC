@@ -86,7 +86,7 @@ public class StateVoting : BaseState
             ChatApi.SendMessage("<br>--ClUTCH--<br>" +
                                 $"Congratulations to {StateMachine.CurrentSubmissionLevel.Author} :party:<br>" +
                                 $"You clutched with {StateMachine.CurrentSubmissionLevel.VotesClutch} to {StateMachine.CurrentSubmissionLevel.VotesKick} votes!<br>" +
-                                $"Enjoy your freewin!");
+                                "Enjoy your freewin!");
             ChatApi.SendMessage(ParseMessage("/servermessage green 0 " + Plugin.Instance.ResultServerMessage.Value));
         }
 

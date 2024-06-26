@@ -1,4 +1,5 @@
 ﻿using System;
+using ZeepSDK.Chat;
 using ZeepSDK.ChatCommands;
 
 namespace KoC.Commands;
@@ -12,6 +13,7 @@ public class CommandZivecef : ILocalChatCommand
 
     public void Handle(string arguments)
     {
-        OnHandle?.Invoke();
+        // OnHandle?.Invoke();
+        ChatApi.AddLocalMessage("Megakick is not implemented yet :(");
     }
 }

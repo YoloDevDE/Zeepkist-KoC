@@ -2,7 +2,6 @@
 using Steamworks;
 using Steamworks.Data;
 using Steamworks.Ugc;
-using ZeepSDK.Chat;
 
 namespace KoC.Utils;
 

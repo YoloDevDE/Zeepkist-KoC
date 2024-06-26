@@ -2,14 +2,13 @@
 using System.Linq;
 using KoC.Commands;
 using KoC.Data;
-using KoC.States;
 using KoC.Utils;
 using ZeepkistClient;
 using ZeepkistNetworking;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
 
-namespace KoC;
+namespace KoC.States;
 
 public class StateMachine
 {
@@ -62,7 +61,6 @@ public class StateMachine
             Plugin.Instance.Messenger.LogWarning("Already stopped");
         }
     }
-
 
 
     public VotingLevel GetVotingLevelByUid(string uid)
