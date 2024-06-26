@@ -79,6 +79,7 @@ public class Plugin : BaseUnityPlugin
         ChatCommandApi.RegisterLocalChatCommand<CommandVotingResult>();
         ChatCommandApi.RegisterLocalChatCommand<CommandCreateVotingLevel>();
         ChatCommandApi.RegisterLocalChatCommand<CommandRegisterSubmissionLevel>();
+        ChatCommandApi.RegisterLocalChatCommand<CommandZivecef>();
 
 
         CommandCreateVotingLevel.OnHandle += SaveCurrentLevelAsVotingLevelToJson;
