@@ -25,7 +25,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
         <PackageReference Include="UnityEngine.Modules" Version="2021.3.10" IncludeAssets="compile"/>
         <PackageReference Include="Zeepkist.GameLibs" Version="16.999.397-alpha"/>
-        <PackageReference Include="ZeepSDK" Version="1.32.0"/>
+        <PackageReference Include="ZeepSDK" Version="1.32.1" />
     </ItemGroup>
 
     <!-- Conditional Dependencies -->
