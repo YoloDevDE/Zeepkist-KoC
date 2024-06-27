@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using ZeepkistClient;
 
 namespace KoC.Utils;
@@ -18,5 +20,23 @@ public class ChatUtils
         {
             chatMessageReceived(message);
         }
+    }
+
+    public static async void RemoveJoinMessage()
+    {
+        if (ZeepkistNetwork.ChatMessages.Any(msg => msg.Message.Contains("[host] Join message set and enabled!")))
+        {
+            ZeepkistNetwork.ChatMessages.RemoveAll(msg => msg.Message.Contains("[host] Join message set and enabled!"));
+            PlayerManager.Instance.currentMaster.OnlineGameplayUI.ChatUI.OnClose();
+            PlayerManager.Instance.currentMaster.OnlineGameplayUI.ChatUI.OnOpen();
+            await RefreshChatAsync();
+        }
+    }
+
+    private static async Task RefreshChatAsync()
+    {
+        await Task.Delay(500); // 100 ms delay
+        PlayerManager.Instance.currentMaster.OnlineGameplayUI.ChatUI.OnClose();
+        PlayerManager.Instance.currentMaster.OnlineGameplayUI.ChatUI.OnOpen();
     }
 }

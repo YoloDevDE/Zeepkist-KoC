@@ -31,6 +31,7 @@ public class StateMachine
     {
         if (!Enabled)
         {
+            ZeepkistNetwork.ChatMessageReceived += OnChatMessageReceived;
             MultiplayerApi.DisconnectedFromGame += Disable;
             TransitionTo(new StateRegisterSubmission(this));
             ChatUtils.AddNewChatMessage(StartMessage());
@@ -39,6 +40,11 @@ public class StateMachine
         {
             Plugin.Instance.Messenger.LogWarning("Already started");
         }
+    }
+
+    private void OnChatMessageReceived(ZeepkistChatMessage msg)
+    {
+        ChatUtils.RemoveJoinMessage();
     }
 
     private ZeepkistChatMessage StartMessage()
@@ -54,6 +60,8 @@ public class StateMachine
         {
             MessengerApi.Log("KoC stopped");
             MultiplayerApi.DisconnectedFromGame -= Disable;
+
+            ZeepkistNetwork.ChatMessageReceived -= OnChatMessageReceived;
             TransitionTo(new StateDisabled(this));
         }
         else
