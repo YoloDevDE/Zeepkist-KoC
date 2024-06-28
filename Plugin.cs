@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
 using HarmonyLib;
 using KoC.Commands;
 using KoC.Data;
@@ -20,35 +18,34 @@ namespace KoC;
 public class Plugin : BaseUnityPlugin
 {
     private Harmony _harmony;
-    public ITaggedMessenger Messenger;
-    public ManualLogSource MyLogger;
+
+    public ITaggedMessenger Messenger { get; private set; }
     public StateMachine Machine { get; private set; }
 
     public static Plugin Instance { get; private set; }
-    public ConfigEntry<string> AutoMessage { get; set; }
-    public ConfigEntry<string> ClutchMessage { get; set; }
-    public ConfigEntry<string> KickMessage { get; set; }
-    public ConfigEntry<string> ResultServerMessage { get; set; }
-    public ConfigEntry<string> JoinMessageNormal { get; set; }
-    public ConfigEntry<string> JoinMessageVoting { get; set; }
+
+    public string AutoMessage { get; set; } = "DO NOT TAKE THE 'MAPPER FINISH'. IF YOU TAKE IT YOU WILL BE AUTOKICKED. IF YOU CAN'T READ YOU HAVE TO FEEL :Yannicsmile:";
+    public string ResultServerMessage { get; set; } = "%l by %a<br>%r";
+    public string JoinMessageNormal { get; set; } = "Welcome to Kick or Clutch!<br>This session gets recorded and uploaded to Owls YouTube (youtube.com/@owlplague)<br>Make sure you behave in chat and subscribe to Owl :YannicSmile:";
+
+    public string JoinMessageVoting { get; set; } =
+        "Welcome to Kick or Clutch!<br>This session gets recorded and uploaded to Owls YouTube (youtube.com/@owlplague)<br>Make sure you behave in chat and subscribe to Owl :YannicSmile:<br>-------<br>DO NOT DRIVE INTO THE 'MAPPER FINISH'!! If you do you WILL get kicked!";
 
     private void Awake()
     {
         _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
         _harmony.PatchAll();
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
-        MyLogger = Logger;
     }
 
     private void Start()
     {
         Instance = this;
-
-
         Messenger = MessengerApi.CreateTaggedMessenger("KoC");
+
         RegisterCommands();
-        InitConfigBindings();
-        SyncVotingLevelsConfigWithJson();
+        RegisterEvents();
+
         Machine = new StateMachine();
     }
 
@@ -58,20 +55,6 @@ public class Plugin : BaseUnityPlugin
         _harmony = null;
     }
 
-    private void InitConfigBindings()
-    {
-        AutoMessage = Config.Bind("Messages (Chat)", "Mapper Finish",
-            "DO NOT TAKE THE MAPPER FINISH OR YOU WILL GET EJECTED TO THE MOON!");
-        KickMessage = Config.Bind("Messages (Chat)", "On Kick", "Sorry %a - It is a Kick! cya o/");
-        ClutchMessage = Config.Bind("Messages (Chat)", "On Clutch", "Congratulations %a - It is a Clutch! :party:");
-        ResultServerMessage = Config.Bind("Messages (Server)", "Result", "%l by %a -> %r");
-        JoinMessageNormal =
-            Config.Bind("Messages (Server)", "Joinmessage", "Welcome to Kick or Clutch. Subscribe to Owl!");
-        JoinMessageVoting = Config.Bind("Messages (Server)", "Joinmessage (Votinglevel)",
-            "Welcome to Kick or Clutch. Subscribe to Owl! DO NOT USE THE MAPPER FINISH!");
-    }
-
-
     private void RegisterCommands()
     {
         ChatCommandApi.RegisterLocalChatCommand<CommandStart>();
@@ -80,25 +63,12 @@ public class Plugin : BaseUnityPlugin
         ChatCommandApi.RegisterLocalChatCommand<CommandCreateVotingLevel>();
         ChatCommandApi.RegisterLocalChatCommand<CommandRegisterSubmissionLevel>();
         ChatCommandApi.RegisterLocalChatCommand<CommandZivecef>();
+    }
 
-
+    private void RegisterEvents()
+    {
         CommandCreateVotingLevel.OnHandle += SaveCurrentLevelAsVotingLevelToJson;
     }
-
-    public void SyncVotingLevelsConfigWithJson()
-    {
-        List<VotingLevel> votingLevels = GetVotingLevels();
-        foreach (VotingLevel votingLevel in votingLevels)
-        {
-            //  string section, 
-            //  string key, 
-            //  T defaultValue, 
-            //  ConfigDescription configDescription = null
-            Config.Bind(votingLevel.LevelName, "Clutch", votingLevel.ClutchFinishTime, ConfigDescription.Empty);
-            Config.Bind(votingLevel.LevelName, "Kick", votingLevel.KickFinishTime, ConfigDescription.Empty);
-        }
-    }
-
 
     public List<VotingLevel> GetVotingLevels()
     {
@@ -119,7 +89,6 @@ public class Plugin : BaseUnityPlugin
 
         return jsonWrapper.VotingLevels;
     }
-
 
     private void SaveCurrentLevelAsVotingLevelToJson()
     {

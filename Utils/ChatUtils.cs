@@ -35,7 +35,7 @@ public class ChatUtils
 
     private static async Task RefreshChatAsync()
     {
-        await Task.Delay(500); // 100 ms delay
+        await Task.Delay(500); 
         PlayerManager.Instance.currentMaster.OnlineGameplayUI.ChatUI.OnClose();
         PlayerManager.Instance.currentMaster.OnlineGameplayUI.ChatUI.OnOpen();
     }

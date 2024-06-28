@@ -18,7 +18,7 @@ public class StateRegisterSubmission : BaseState
     {
         RacingApi.LevelLoaded += OnLevelLoaded;
         OnLevelLoaded();
-        ChatApi.SendMessage($"/joinmessage orange {Plugin.Instance.JoinMessageNormal.Value}");
+        ChatApi.SendMessage($"/joinmessage orange {Plugin.Instance.JoinMessageNormal}");
     }
 
     private async void OnLevelLoaded()

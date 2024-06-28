@@ -35,8 +35,8 @@ public class StateVoting : BaseState
         UpdateVotes();
 
         // Send messages
-        ChatApi.SendMessage("/joinmessage orange " + Plugin.Instance.JoinMessageVoting.Value);
-        ChatApi.SendMessage(Plugin.Instance.AutoMessage.Value);
+        ChatApi.SendMessage("/joinmessage orange " + Plugin.Instance.JoinMessageVoting);
+        ChatApi.SendMessage(Plugin.Instance.AutoMessage);
     }
 
     public override void Exit()
@@ -79,7 +79,7 @@ public class StateVoting : BaseState
                                 $"Sorry to {StateMachine.CurrentSubmissionLevel.Author} :/<br>" +
                                 $"You flopped with {StateMachine.CurrentSubmissionLevel.VotesClutch} to {StateMachine.CurrentSubmissionLevel.VotesKick} votes..<br>" +
                                 "You will now get kicked o7");
-            ChatApi.SendMessage(ParseMessage("/servermessage red 0 " + Plugin.Instance.ResultServerMessage.Value));
+            ChatApi.SendMessage(ParseMessage("/servermessage red 0 " + Plugin.Instance.ResultServerMessage));
         }
         else
         {
@@ -87,7 +87,7 @@ public class StateVoting : BaseState
                                 $"Congratulations to {StateMachine.CurrentSubmissionLevel.Author} :party:<br>" +
                                 $"You clutched with {StateMachine.CurrentSubmissionLevel.VotesClutch} to {StateMachine.CurrentSubmissionLevel.VotesKick} votes!<br>" +
                                 "Enjoy your freewin!");
-            ChatApi.SendMessage(ParseMessage("/servermessage green 0 " + Plugin.Instance.ResultServerMessage.Value));
+            ChatApi.SendMessage(ParseMessage("/servermessage green 0 " + Plugin.Instance.ResultServerMessage));
         }
 
         StateMachine.TransitionTo(new StatePostVoting(StateMachine));
