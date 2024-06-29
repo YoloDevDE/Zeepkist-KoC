@@ -28,15 +28,21 @@ public class StateVoting : BaseState
         MultiplayerApi.PlayerJoined += OnPlayerJoined;
         MultiplayerApi.PlayerLeft += OnPlayerLeft;
         RacingApi.RoundEnded += OnRoundEnded;
+        Plugin.Instance.OnlyEligiblePlayersCanVote.SettingChanged += OnSettingChanged;
         FavoritePlayerChangedNotifier.FavoritePlayersChanged += OnFavoritePlayersChanged;
         CommandVotingResult.OnHandle += OnVotingFinished;
 
         // Initial calls
-        UpdateVotes();
+        ProcessVotes();
 
         // Send messages
         ChatApi.SendMessage("/joinmessage orange " + Plugin.Instance.JoinMessageVoting);
         ChatApi.SendMessage(Plugin.Instance.AutoMessage);
+    }
+
+    private void OnSettingChanged(object sender, EventArgs e)
+    {
+        ProcessVotes();
     }
 
     public override void Exit()
@@ -46,23 +52,24 @@ public class StateVoting : BaseState
         MultiplayerApi.PlayerJoined -= OnPlayerJoined;
         MultiplayerApi.PlayerLeft -= OnPlayerLeft;
         RacingApi.RoundEnded -= OnRoundEnded;
+        Plugin.Instance.OnlyEligiblePlayersCanVote.SettingChanged -= OnSettingChanged;
         FavoritePlayerChangedNotifier.FavoritePlayersChanged -= OnFavoritePlayersChanged;
         CommandVotingResult.OnHandle -= OnVotingFinished;
     }
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)
     {
-        UpdateVotes();
+        ProcessVotes();
     }
 
     private void OnPlayerLeft(ZeepkistNetworkPlayer player)
     {
-        UpdateVotes();
+        ProcessVotes();
     }
 
     private void OnFavoritePlayersChanged()
     {
-        UpdateVotes();
+        ProcessVotes();
     }
 
     private void OnRoundEnded()
@@ -73,19 +80,19 @@ public class StateVoting : BaseState
 
     private void OnVotingFinished()
     {
-        if (StateMachine.CurrentSubmissionLevel.VotesClutch < StateMachine.CurrentSubmissionLevel.VotesKick)
+        if (StateMachine.SubmissionLevel.VotesClutch < StateMachine.SubmissionLevel.VotesKick)
         {
             ChatApi.SendMessage("<br>--KICK--<br>" +
-                                $"Sorry to {StateMachine.CurrentSubmissionLevel.Author} :/<br>" +
-                                $"You flopped with {StateMachine.CurrentSubmissionLevel.VotesClutch} to {StateMachine.CurrentSubmissionLevel.VotesKick} votes..<br>" +
+                                $"Sorry to {StateMachine.SubmissionLevel.Author} :/<br>" +
+                                $"You flopped with {StateMachine.SubmissionLevel.VotesClutch} to {StateMachine.SubmissionLevel.VotesKick} votes..<br>" +
                                 "You will now get kicked o7");
             ChatApi.SendMessage(ParseMessage("/servermessage red 0 " + Plugin.Instance.ResultServerMessage));
         }
         else
         {
             ChatApi.SendMessage("<br>--ClUTCH--<br>" +
-                                $"Congratulations to {StateMachine.CurrentSubmissionLevel.Author} :party:<br>" +
-                                $"You clutched with {StateMachine.CurrentSubmissionLevel.VotesClutch} to {StateMachine.CurrentSubmissionLevel.VotesKick} votes!<br>" +
+                                $"Congratulations to {StateMachine.SubmissionLevel.Author} :party:<br>" +
+                                $"You clutched with {StateMachine.SubmissionLevel.VotesClutch} to {StateMachine.SubmissionLevel.VotesKick} votes!<br>" +
                                 "Enjoy your freewin!");
             ChatApi.SendMessage(ParseMessage("/servermessage green 0 " + Plugin.Instance.ResultServerMessage));
         }
@@ -95,82 +102,68 @@ public class StateVoting : BaseState
 
     private void OnPlayerResultsChanged(ZeepkistNetworkPlayer player)
     {
-        UpdateVotes();
+        ProcessVotes();
     }
 
-    private void UpdateVotes()
+    private void ProcessVotes()
     {
-        StateMachine.CurrentSubmissionLevel.ResetVotes();
-        foreach (LeaderboardItem player in ZeepkistNetwork.Leaderboard)
+        StateMachine.SubmissionLevel.ResetVotes();
+
+        foreach (LeaderboardItem leaderboardItem in ZeepkistNetwork.Leaderboard)
         {
-            if (StateMachine.IsNeutral(player.SteamID))
+            // Kick players with a time below the ClutchFinishTime
+            if (IsUsingMapperFinish(leaderboardItem))
             {
+                StateMachine.KickIfNotNeutralPlayer(leaderboardItem);
                 continue;
             }
 
-            if (player.Time >= CurrentVotingLevel.KickFinishTime)
+            // Skip eligible voters if only eligible players can vote
+            if (StateMachine.IsEligibleForVoting(leaderboardItem.SteamID) && Plugin.Instance.OnlyEligiblePlayersCanVote.Value)
             {
-                StateMachine.CurrentSubmissionLevel.VotesKick++;
-            }
-            else if (player.Time >= CurrentVotingLevel.ClutchFinishTime)
-            {
-                StateMachine.CurrentSubmissionLevel.VotesClutch++;
-            }
-            else
-            {
-                StateMachine.KickNonNeutralPlayer(player);
+                // Count votes for kick or clutch based on the player's time
+                if (leaderboardItem.Time >= CurrentVotingLevel.KickFinishTime)
+                {
+                    StateMachine.SubmissionLevel.VotesKick++;
+                }
+                else
+                {
+                    StateMachine.SubmissionLevel.VotesClutch++;
+                }
             }
         }
 
         UpdateVotingResultsMessage();
     }
 
+    private bool IsUsingMapperFinish(LeaderboardItem leaderboardItem)
+    {
+        return leaderboardItem.Time < CurrentVotingLevel.ClutchFinishTime;
+    }
+
 
     private void UpdateVotingResultsMessage()
     {
         ChatApi.SendMessage($"/servermessage yellow 0 " +
-                            $"{StateMachine.CurrentSubmissionLevel.Name} by {StateMachine.CurrentSubmissionLevel.Author}<br>" +
-                            $"Kick: {Math.Max(0, StateMachine.CurrentSubmissionLevel.VotesKick)} " +
-                            $"| Clutch: {Math.Max(0, StateMachine.CurrentSubmissionLevel.VotesClutch)}")
-            // $"| Votes Left: {Math.Max(0, GetTotalVotes())}")
+                            $"{StateMachine.SubmissionLevel.Name} by {StateMachine.SubmissionLevel.Author}<br>" +
+                            $"Kick: {StateMachine.SubmissionLevel.VotesKick} | Clutch: {StateMachine.SubmissionLevel.VotesClutch}")
             ;
-    }
-
-
-    private int CountFavoritesInLobby()
-    {
-        return ZeepkistNetwork.Players.CountFavoritesInLobby(ZeepkistNetwork.CurrentLobby.Favorites);
-    }
-
-    private int CountNeutrals()
-    {
-        return 1; // Placeholder -> If sometime Neutrals come into play we will implement this. For now it "adds the host"
     }
 
 
     private string ParseMessage(string message)
     {
         return message
-            .Replace("%a", StateMachine.CurrentSubmissionLevel.Author)
-            .Replace("%l", StateMachine.CurrentSubmissionLevel.Name)
-            .Replace("%r", VotingResultString())
-            .Replace("%c", StateMachine.CurrentSubmissionLevel.VotesClutch.ToString())
-            .Replace("%k", StateMachine.CurrentSubmissionLevel.VotesKick.ToString())
-            .Replace("%t", GetTotalVotes().ToString());
+                .Replace("%a", StateMachine.SubmissionLevel.Author)
+                .Replace("%l", StateMachine.SubmissionLevel.Name)
+                .Replace("%r", VotingResultString())
+                .Replace("%c", StateMachine.SubmissionLevel.VotesClutch.ToString())
+                .Replace("%k", StateMachine.SubmissionLevel.VotesKick.ToString())
+            ;
     }
 
     private string VotingResultString()
     {
-        return StateMachine.CurrentSubmissionLevel.VotesClutch >= StateMachine.CurrentSubmissionLevel.VotesKick ? "Clutch" : "Kick";
-    }
-
-    private int GetTotalVotes()
-    {
-        return CountPlayersInLobby() - CountNeutrals() - StateMachine.CurrentSubmissionLevel.VotesKick - StateMachine.CurrentSubmissionLevel.VotesClutch;
-    }
-
-    private int CountPlayersInLobby()
-    {
-        return ZeepkistNetwork.Players.Count;
+        return StateMachine.SubmissionLevel.VotesClutch >= StateMachine.SubmissionLevel.VotesKick ? "Clutch" : "Kick";
     }
 }

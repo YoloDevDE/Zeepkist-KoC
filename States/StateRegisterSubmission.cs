@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using KoC.Commands;
 using KoC.Data;
 using KoC.Utils;
 using ZeepkistClient;
 using ZeepSDK.Chat;
+using ZeepSDK.Multiplayer;
 using ZeepSDK.Racing;
 
 namespace KoC.States;
@@ -16,9 +19,30 @@ public class StateRegisterSubmission : BaseState
 
     public override void Enter()
     {
-        RacingApi.LevelLoaded += OnLevelLoaded;
         OnLevelLoaded();
+        InitializeEligibleVoters();
+        RacingApi.LevelLoaded += OnLevelLoaded;
+        MultiplayerApi.PlayerJoined += OnPlayerJoined;
+        CommandRegisterSubmissionLevel.OnHandle += OverrideSubmissionLevel;
         ChatApi.SendMessage($"/joinmessage orange {Plugin.Instance.JoinMessageNormal}");
+    }
+
+    private void OnPlayerJoined(ZeepkistNetworkPlayer player)
+    {
+        StateMachine.EligibleVoters.Add(player);
+    }
+
+    private void InitializeEligibleVoters()
+    {
+        StateMachine.EligibleVoters = new List<ZeepkistNetworkPlayer>();
+        StateMachine.EligibleVoters.AddRange(ZeepkistNetwork.Players.Values);
+    }
+
+
+    private void OverrideSubmissionLevel()
+    {
+        StateMachine.OverrideSubmission = true;
+        OnLevelLoaded();
     }
 
     private async void OnLevelLoaded()
@@ -67,28 +91,33 @@ public class StateRegisterSubmission : BaseState
     public override void Exit()
     {
         RacingApi.LevelLoaded -= OnLevelLoaded;
+        CommandRegisterSubmissionLevel.OnHandle -= OverrideSubmissionLevel;
     }
 
     private void RegisterSubmissionLevel(SubmissionLevel submissionLevel)
     {
-        if (IsAdventureLevel())
+        if (!StateMachine.OverrideSubmission)
         {
-            Plugin.Instance.Messenger.LogWarning(
-                "Submission-Level expected but got Adventure-Level. Please Skip to a different level that is no Adventure-Level.",
-                5F);
-            return;
+            if (IsAdventureLevel())
+            {
+                Plugin.Instance.Messenger.LogWarning(
+                    "Submission-Level expected but got Adventure-Level. You may want to skip to a Submission-Level. If you want to vote this level type '/koc register' and continue as usual.",
+                    10F);
+                return;
+            }
+
+            if (LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, StateMachine.VotingLevels))
+            {
+                Plugin.Instance.Messenger.LogWarning(
+                    "Submission-Level expected but got Voting-Level. You may want to skip to a Submission-Level. If you want to vote this level type '/koc register' and continue as usual.",
+                    10F);
+                return;
+            }
         }
 
-        if (LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, StateMachine.VotingLevels))
-        {
-            Plugin.Instance.Messenger.LogWarning(
-                "Submission-Level expected but got Voting-Level. Please Skip to a different level that is no Voting-Level.",
-                5F);
-            return;
-        }
-
-        StateMachine.CurrentSubmissionLevel = submissionLevel;
-        Plugin.Instance.Messenger.LogSuccess($"Submission-Level registered for Voting: '{StateMachine.CurrentSubmissionLevel.Name}'", 5F);
+        StateMachine.SubmissionLevel = submissionLevel;
+        Plugin.Instance.Messenger.LogSuccess($"Submission-Level registered for Voting: '{StateMachine.SubmissionLevel.Name}'", 5F);
+        StateMachine.OverrideSubmission = false;
         StateMachine.TransitionTo(new StatePreVoting(StateMachine));
     }
 

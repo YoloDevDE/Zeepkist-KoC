@@ -28,7 +28,7 @@ public class StatePostVoting : BaseState
         {
             if (item.Time < StateMachine.CurrentVotingLevel.ClutchFinishTime)
             {
-                StateMachine.KickNonNeutralPlayer(item);
+                StateMachine.KickIfNotNeutralPlayer(item);
             }
         }
     }

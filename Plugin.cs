@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using BepInEx;
+using BepInEx.Configuration;
 using HarmonyLib;
 using KoC.Commands;
 using KoC.Data;
@@ -23,7 +24,7 @@ public class Plugin : BaseUnityPlugin
     public StateMachine Machine { get; private set; }
 
     public static Plugin Instance { get; private set; }
-
+    public ConfigEntry<bool> OnlyEligiblePlayersCanVote { get; set; }
     public string AutoMessage { get; set; } = "DO NOT TAKE THE 'MAPPER FINISH'. IF YOU TAKE IT YOU WILL BE AUTOKICKED. IF YOU CAN'T READ YOU HAVE TO FEEL :Yannicsmile:";
     public string ResultServerMessage { get; set; } = "%l by %a<br>%r";
     public string JoinMessageNormal { get; set; } = "Welcome to Kick or Clutch!<br>This session gets recorded and uploaded to Owls YouTube (youtube.com/@owlplague)<br>Make sure you behave in chat and subscribe to Owl :YannicSmile:";
@@ -42,10 +43,10 @@ public class Plugin : BaseUnityPlugin
     {
         Instance = this;
         Messenger = MessengerApi.CreateTaggedMessenger("KoC");
-
+        OnlyEligiblePlayersCanVote = Config.Bind("Voting", "Restricted Voting<br>-> If this setting is <#00FF00>ON<#FFFFFF> only players who were present on the previous submission map can vote", true,
+            new ConfigDescription("If this is set to 'true' only players who were present in the previous submission map can vote."));
         RegisterCommands();
         RegisterEvents();
-
         Machine = new StateMachine();
     }
 

@@ -12,11 +12,12 @@ namespace KoC.States;
 
 public class StateMachine
 {
-    public SubmissionLevel CurrentSubmissionLevel;
     public VotingLevel CurrentVotingLevel;
     public bool Enabled;
     public BaseState State;
+    public SubmissionLevel SubmissionLevel;
     public List<VotingLevel> VotingLevels;
+
 
     public StateMachine()
     {
@@ -27,10 +28,15 @@ public class StateMachine
         State.Enter();
     }
 
+    public List<ZeepkistNetworkPlayer> EligibleVoters { get; set; }
+    public bool OverrideSubmission { get; set; }
+
+
     public void Enable()
     {
         if (!Enabled)
         {
+            EligibleVoters = new List<ZeepkistNetworkPlayer>();
             ZeepkistNetwork.ChatMessageReceived += OnChatMessageReceived;
             MultiplayerApi.DisconnectedFromGame += Disable;
             TransitionTo(new StateRegisterSubmission(this));
@@ -49,8 +55,10 @@ public class StateMachine
 
     private ZeepkistChatMessage StartMessage()
     {
+        string restrictedVoting = (Plugin.Instance.OnlyEligiblePlayersCanVote.Value ? "<#00FF00>ON" : "<#FF0000>OFF") + "</color>";
         ZeepkistChatMessage msg = new ZeepkistChatMessage();
-        msg.Message = "<#00AA00><i>Kick or Clutch started!</i></color>";
+        msg.Message = "<i><#00AA00>Kick or Clutch started!<br>" +
+                      $"Restricted Voting:</color> {restrictedVoting}</i>";
         return msg;
     }
 
@@ -76,20 +84,37 @@ public class StateMachine
         return VotingLevels.FirstOrDefault(level => level.LevelUid == uid);
     }
 
-    public bool IsNeutral(ulong steamID)
+    public bool IsLocalPlayer(ulong steamID)
     {
-        return steamID == ZeepkistNetwork.LocalPlayer.SteamID || steamID == CurrentSubmissionLevel.AuthorSteamId || ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
+        return steamID == ZeepkistNetwork.LocalPlayer.SteamID;
     }
 
-    public void KickNonNeutralPlayer(LeaderboardItem item)
+    public bool IsAuthor(ulong steamID)
     {
-        if (!IsNeutral(item.SteamID))
+        return steamID == SubmissionLevel.AuthorSteamId;
+    }
+
+    public bool IsFavorite(ulong steamID)
+    {
+        return ZeepkistNetwork.CurrentLobby.Favorites.Contains(steamID);
+    }
+
+    public bool IsEligibleForVoting(ulong steamID)
+    {
+        return EligibleVoters.Any(voter => voter.SteamID == steamID);
+    }
+
+    public void KickIfNotNeutralPlayer(LeaderboardItem item)
+    {
+        if (IsLocalPlayer(item.SteamID) || IsFavorite(item.SteamID) || IsAuthor(item.SteamID))
         {
-            ZeepkistNetworkPlayer player = ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
-            if (player != null)
-            {
-                ZeepkistNetwork.KickPlayer(player);
-            }
+            return;
+        }
+
+        ZeepkistNetworkPlayer player = ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
+        if (player != null)
+        {
+            ZeepkistNetwork.KickPlayer(player);
         }
     }
 

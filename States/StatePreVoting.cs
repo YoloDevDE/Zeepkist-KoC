@@ -23,8 +23,8 @@ public class StatePreVoting : BaseState
         {
             Plugin.Instance.Messenger
                 .LogWarning(
-                    "Voting-Level expected but got Adventure-Level. Please Skip to a different level that is no Adventure-Level.",
-                    5F);
+                    "Voting-Level expected but got Adventure-Level. You may want to skip to a Voting-Level. If you want to vote this level type '/koc register' and continue as usual.",
+                    10F);
             return;
         }
 
@@ -32,7 +32,7 @@ public class StatePreVoting : BaseState
         {
             Plugin.Instance.Messenger
                 .LogWarning(
-                    "Voting-Level expected but got different Submission-Level. If that was a mistake you can just skip to a Voting-Level. If you want the current level as a submission type '/koc register' in the chat",
+                    "Voting-Level expected but got Adventure-Level. You may want to skip to a Voting-Level. If you want to vote this level type '/koc register' and continue as usual.",
                     10F);
             return;
         }
@@ -44,6 +44,7 @@ public class StatePreVoting : BaseState
 
     private void RegisterSubmissionLevel()
     {
+        StateMachine.OverrideSubmission = true;
         StateMachine.TransitionTo(new StateRegisterSubmission(StateMachine));
     }
 
