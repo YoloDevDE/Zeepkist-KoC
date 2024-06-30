@@ -2,7 +2,7 @@
 using HarmonyLib;
 using ZeepkistClient;
 
-namespace KoC.Utils;
+namespace KoC.utils;
 
 [HarmonyPatch(typeof(ZeepkistNetwork), nameof(ZeepkistNetwork.OnFavoritePlayer))]
 public class FavoritePlayerChangedNotifier

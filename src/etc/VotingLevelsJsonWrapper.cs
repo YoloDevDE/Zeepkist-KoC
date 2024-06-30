@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using KoC.Data;
+using KoC.models;
 
 namespace KoC.etc;
 

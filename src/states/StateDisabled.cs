@@ -1,14 +1,9 @@
 ﻿using ZeepSDK.Chat;
 
-namespace KoC.States;
+namespace KoC.states;
 
-public class StateDisabled : BaseState
+public class StateDisabled(StateMachine stateMachine) : BaseState(stateMachine)
 {
-    public StateDisabled(StateMachine stateMachine) : base(stateMachine)
-    {
-    }
-
-
     public override void Enter()
     {
         ChatApi.SendMessage("/joinmessage off");

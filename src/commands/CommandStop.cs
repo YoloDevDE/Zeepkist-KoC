@@ -1,7 +1,7 @@
 ﻿using System;
 using ZeepSDK.ChatCommands;
 
-namespace KoC.Commands;
+namespace KoC.commands;
 
 public class CommandStop : ILocalChatCommand
 {

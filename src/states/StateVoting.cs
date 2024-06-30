@@ -1,21 +1,17 @@
 ﻿using System;
-using KoC.Commands;
-using KoC.Data;
-using KoC.Utils;
+using KoC.commands;
+using KoC.models;
+using KoC.utils;
 using ZeepkistClient;
 using ZeepkistNetworking;
 using ZeepSDK.Chat;
 using ZeepSDK.Multiplayer;
 using ZeepSDK.Racing;
 
-namespace KoC.States;
+namespace KoC.states;
 
-public class StateVoting : BaseState
+public class StateVoting(StateMachine stateMachine) : BaseState(stateMachine)
 {
-    public StateVoting(StateMachine stateMachine) : base(stateMachine)
-    {
-    }
-
     private VotingLevel CurrentVotingLevel { get; set; }
 
     public override void Enter()

@@ -2,7 +2,7 @@
 using ZeepSDK.Chat;
 using ZeepSDK.ChatCommands;
 
-namespace KoC.Commands;
+namespace KoC.commands;
 
 public class CommandZivecef : ILocalChatCommand
 {

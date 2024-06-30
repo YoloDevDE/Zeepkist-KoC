@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ZeepkistClient;
 
-namespace KoC.Utils;
+namespace KoC.utils;
 
 public class ChatUtils
 {

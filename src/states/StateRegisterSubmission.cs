@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KoC.Commands;
-using KoC.Data;
-using KoC.Utils;
+using KoC.commands;
+using KoC.models;
+using KoC.utils;
 using ZeepkistClient;
 using ZeepSDK.Chat;
 using ZeepSDK.Multiplayer;
 using ZeepSDK.Racing;
 
-namespace KoC.States;
+namespace KoC.states;
 
-public class StateRegisterSubmission : BaseState
+public class StateRegisterSubmission(StateMachine stateMachine) : BaseState(stateMachine)
 {
-    public StateRegisterSubmission(StateMachine stateMachine) : base(stateMachine)
-    {
-    }
-
     public override void Enter()
     {
         OnLevelLoaded();

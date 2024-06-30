@@ -2,14 +2,10 @@
 using ZeepkistNetworking;
 using ZeepSDK.Racing;
 
-namespace KoC.States;
+namespace KoC.states;
 
-public class StatePostVoting : BaseState
+public class StatePostVoting(StateMachine stateMachine) : BaseState(stateMachine)
 {
-    public StatePostVoting(StateMachine stateMachine) : base(stateMachine)
-    {
-    }
-
     public override void Enter()
     {
         RacingApi.LevelLoaded += OnLevelLoaded;

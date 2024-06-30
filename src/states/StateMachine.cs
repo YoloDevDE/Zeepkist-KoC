@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using KoC.Commands;
-using KoC.Data;
-using KoC.Utils;
+using KoC.commands;
+using KoC.models;
+using KoC.utils;
 using ZeepkistClient;
 using ZeepkistNetworking;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
 
-namespace KoC.States;
+namespace KoC.states;
 
 public class StateMachine
 {

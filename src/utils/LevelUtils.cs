@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using KoC.Data;
+using KoC.models;
 
-namespace KoC.Utils;
+namespace KoC.utils;
 
 public static class LevelUtils
 {

@@ -3,7 +3,7 @@ using Steamworks;
 using Steamworks.Data;
 using Steamworks.Ugc;
 
-namespace KoC.Utils;
+namespace KoC.utils;
 
 public class SteamUGCHelper
 {

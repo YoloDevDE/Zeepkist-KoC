@@ -1,16 +1,12 @@
-﻿using KoC.Commands;
-using KoC.Utils;
+﻿using KoC.commands;
+using KoC.utils;
 using ZeepkistClient;
 using ZeepSDK.Racing;
 
-namespace KoC.States;
+namespace KoC.states;
 
-public class StatePreVoting : BaseState
+public class StatePreVoting(StateMachine stateMachine) : BaseState(stateMachine)
 {
-    public StatePreVoting(StateMachine stateMachine) : base(stateMachine)
-    {
-    }
-
     public override void Enter()
     {
         CommandRegisterSubmissionLevel.OnHandle += RegisterSubmissionLevel;

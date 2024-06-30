@@ -2,7 +2,7 @@
 using System.Linq;
 using ZeepkistClient;
 
-namespace KoC.Utils;
+namespace KoC.utils;
 
 public static class ZeepkistNetworkExtensions
 {
