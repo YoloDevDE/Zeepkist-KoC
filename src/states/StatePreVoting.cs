@@ -1,6 +1,7 @@
 ﻿using KoC.commands;
 using KoC.utils;
 using ZeepkistClient;
+using ZeepSDK.Multiplayer;
 using ZeepSDK.Racing;
 
 namespace KoC.states;
@@ -9,8 +10,16 @@ public class StatePreVoting(StateMachine stateMachine) : BaseState(stateMachine)
 {
     public override void Enter()
     {
+        StateMachine.InitializeEligibleVoters();
         CommandRegisterSubmissionLevel.OnHandle += RegisterSubmissionLevel;
         RacingApi.LevelLoaded += OnLevelLoaded;
+        MultiplayerApi.PlayerJoined += OnPlayerJoined;
+    }
+
+
+    private void OnPlayerJoined(ZeepkistNetworkPlayer player)
+    {
+        StateMachine.EligibleVoters.Add(player);
     }
 
     private void OnLevelLoaded()
@@ -48,5 +57,6 @@ public class StatePreVoting(StateMachine stateMachine) : BaseState(stateMachine)
     {
         CommandRegisterSubmissionLevel.OnHandle -= RegisterSubmissionLevel;
         RacingApi.LevelLoaded -= OnLevelLoaded;
+        MultiplayerApi.PlayerJoined -= OnPlayerJoined;
     }
 }

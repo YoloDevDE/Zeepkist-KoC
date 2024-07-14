@@ -20,7 +20,7 @@ public class SubmissionLevel(
     public int VotesKick { get; set; }
 
     public string Author { get; set; } = authorName;
-    public ulong AuthorSteamId { get; set; } = 0;
+    public ulong AuthorSteamId { get; set; }
 
     public async Task InitializeAsync()
     {

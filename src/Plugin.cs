@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using HarmonyLib;
 using KoC.commands;
 using KoC.etc;
@@ -24,6 +25,7 @@ public class Plugin : BaseUnityPlugin
     public StateMachine Machine { get; private set; }
 
     public static Plugin Instance { get; private set; }
+
     public ConfigEntry<bool> OnlyEligiblePlayersCanVote { get; set; }
     public string AutoMessage { get; set; } = "DO NOT TAKE THE 'MAPPER FINISH'. IF YOU TAKE IT YOU WILL BE AUTOKICKED. IF YOU CAN'T READ YOU HAVE TO FEEL :Yannicsmile:";
     public string ResultServerMessage { get; set; } = "%l by %a<br>%r";
@@ -54,6 +56,11 @@ public class Plugin : BaseUnityPlugin
     {
         _harmony?.UnpatchSelf();
         _harmony = null;
+    }
+
+    public ManualLogSource GetLogger()
+    {
+        return Logger;
     }
 
     private void RegisterCommands()

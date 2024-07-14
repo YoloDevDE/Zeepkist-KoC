@@ -7,4 +7,3 @@ public abstract class BaseState(StateMachine stateMachine)
     public abstract void Enter();
     public abstract void Exit();
 }
-

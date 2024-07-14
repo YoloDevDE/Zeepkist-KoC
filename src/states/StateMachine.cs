@@ -12,12 +12,12 @@ namespace KoC.states;
 
 public class StateMachine
 {
+    public SubmissionLevel CachedSubmissionLevel;
     public VotingLevel CurrentVotingLevel;
     public bool Enabled;
     public BaseState State;
     public SubmissionLevel SubmissionLevel;
     public List<VotingLevel> VotingLevels;
-
 
     public StateMachine()
     {
@@ -31,15 +31,19 @@ public class StateMachine
     public List<ZeepkistNetworkPlayer> EligibleVoters { get; set; }
     public bool OverrideSubmission { get; set; }
 
+    public void InitializeEligibleVoters()
+    {
+        EligibleVoters = new List<ZeepkistNetworkPlayer>();
+        EligibleVoters.AddRange(ZeepkistNetwork.Players.Values);
+    }
 
     public void Enable()
     {
         if (!Enabled)
         {
-            EligibleVoters = new List<ZeepkistNetworkPlayer>();
             ZeepkistNetwork.ChatMessageReceived += OnChatMessageReceived;
             MultiplayerApi.DisconnectedFromGame += Disable;
-            TransitionTo(new StateRegisterSubmission(this));
+            TransitionTo(new StateCheckCachedLevel(this));
             ChatUtils.AddNewChatMessage(StartMessage());
         }
         else
@@ -68,7 +72,6 @@ public class StateMachine
         {
             MessengerApi.Log("KoC stopped");
             MultiplayerApi.DisconnectedFromGame -= Disable;
-
             ZeepkistNetwork.ChatMessageReceived -= OnChatMessageReceived;
             TransitionTo(new StateDisabled(this));
         }

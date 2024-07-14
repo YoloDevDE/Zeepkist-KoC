@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using KoC.commands;
 using KoC.models;
@@ -16,22 +15,15 @@ public class StateRegisterSubmission(StateMachine stateMachine) : BaseState(stat
     public override void Enter()
     {
         OnLevelLoaded();
-        InitializeEligibleVoters();
         RacingApi.LevelLoaded += OnLevelLoaded;
-        MultiplayerApi.PlayerJoined += OnPlayerJoined;
         CommandRegisterSubmissionLevel.OnHandle += OverrideSubmissionLevel;
+        MultiplayerApi.PlayerJoined += OnPlayerJoined;
         ChatApi.SendMessage($"/joinmessage orange {Plugin.Instance.JoinMessageNormal}");
     }
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)
     {
         StateMachine.EligibleVoters.Add(player);
-    }
-
-    private void InitializeEligibleVoters()
-    {
-        StateMachine.EligibleVoters = new List<ZeepkistNetworkPlayer>();
-        StateMachine.EligibleVoters.AddRange(ZeepkistNetwork.Players.Values);
     }
 
 
@@ -88,6 +80,7 @@ public class StateRegisterSubmission(StateMachine stateMachine) : BaseState(stat
     {
         RacingApi.LevelLoaded -= OnLevelLoaded;
         CommandRegisterSubmissionLevel.OnHandle -= OverrideSubmissionLevel;
+        MultiplayerApi.PlayerJoined -= OnPlayerJoined;
     }
 
     private void RegisterSubmissionLevel(SubmissionLevel submissionLevel)

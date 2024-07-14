@@ -115,17 +115,19 @@ public class StateVoting(StateMachine stateMachine) : BaseState(stateMachine)
             }
 
             // Skip eligible voters if only eligible players can vote
-            if (StateMachine.IsEligibleForVoting(leaderboardItem.SteamID) && Plugin.Instance.OnlyEligiblePlayersCanVote.Value)
+            if (!StateMachine.IsEligibleForVoting(leaderboardItem.SteamID) && Plugin.Instance.OnlyEligiblePlayersCanVote.Value)
             {
-                // Count votes for kick or clutch based on the player's time
-                if (leaderboardItem.Time >= CurrentVotingLevel.KickFinishTime)
-                {
-                    StateMachine.SubmissionLevel.VotesKick++;
-                }
-                else
-                {
-                    StateMachine.SubmissionLevel.VotesClutch++;
-                }
+                continue;
+            }
+
+            // Count votes for kick or clutch based on the player's time
+            if (leaderboardItem.Time >= CurrentVotingLevel.KickFinishTime)
+            {
+                StateMachine.SubmissionLevel.VotesKick++;
+            }
+            else
+            {
+                StateMachine.SubmissionLevel.VotesClutch++;
             }
         }
 
