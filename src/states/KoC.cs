@@ -10,7 +10,7 @@ using ZeepSDK.Multiplayer;
 
 namespace KoC.states;
 
-public class StateMachine
+public class KoC
 {
     public SubmissionLevel CachedSubmissionLevel;
     public VotingLevel CurrentVotingLevel;
@@ -19,7 +19,7 @@ public class StateMachine
     public SubmissionLevel SubmissionLevel;
     public List<VotingLevel> VotingLevels;
 
-    public StateMachine()
+    public KoC()
     {
         VotingLevels = Plugin.Instance.GetVotingLevels();
         CommandStart.OnHandle += Enable;

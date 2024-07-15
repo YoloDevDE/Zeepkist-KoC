@@ -3,20 +3,20 @@ using ZeepkistClient;
 
 namespace KoC.states;
 
-public class StateCheckCachedLevel(StateMachine stateMachine) : BaseState(stateMachine)
+public class StateCheckCachedLevel(KoC koC) : BaseState(koC)
 {
     public override void Enter()
     {
         string levelUid = ZeepkistNetwork.CurrentLobby.LevelUID;
 
-        if (LevelUtils.IsVotingLevel(levelUid, StateMachine.VotingLevels) && StateMachine.SubmissionLevel == null)
+        if (LevelUtils.IsVotingLevel(levelUid, KoC.VotingLevels) && KoC.SubmissionLevel == null)
         {
-            StateMachine.SubmissionLevel = StateMachine.CachedSubmissionLevel;
-            StateMachine.TransitionTo(new StateVoting(StateMachine));
+            KoC.SubmissionLevel = KoC.CachedSubmissionLevel;
+            KoC.TransitionTo(new StateVoting(KoC));
         }
         else
         {
-            StateMachine.TransitionTo(new StateRegisterSubmission(StateMachine));
+            KoC.TransitionTo(new StateRegisterSubmission(KoC));
         }
     }
 

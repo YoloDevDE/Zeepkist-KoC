@@ -7,7 +7,6 @@ using HarmonyLib;
 using KoC.commands;
 using KoC.etc;
 using KoC.models;
-using KoC.states;
 using Newtonsoft.Json;
 using ZeepSDK.ChatCommands;
 using ZeepSDK.Messaging;
@@ -22,7 +21,7 @@ public class Plugin : BaseUnityPlugin
     private Harmony _harmony;
 
     public ITaggedMessenger Messenger { get; private set; }
-    public StateMachine Machine { get; private set; }
+    public states.KoC Machine { get; private set; }
 
     public static Plugin Instance { get; private set; }
 
@@ -49,7 +48,7 @@ public class Plugin : BaseUnityPlugin
             new ConfigDescription("If this is set to 'true' only players who were present in the previous submission map can vote."));
         RegisterCommands();
         RegisterEvents();
-        Machine = new StateMachine();
+        Machine = new states.KoC();
     }
 
     private void OnDestroy()

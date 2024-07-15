@@ -6,11 +6,11 @@ using ZeepSDK.Racing;
 
 namespace KoC.states;
 
-public class StatePreVoting(StateMachine stateMachine) : BaseState(stateMachine)
+public class StatePreVoting(KoC koC) : BaseState(koC)
 {
     public override void Enter()
     {
-        StateMachine.InitializeEligibleVoters();
+        KoC.InitializeEligibleVoters();
         CommandRegisterSubmissionLevel.OnHandle += RegisterSubmissionLevel;
         RacingApi.LevelLoaded += OnLevelLoaded;
         MultiplayerApi.PlayerJoined += OnPlayerJoined;
@@ -19,7 +19,7 @@ public class StatePreVoting(StateMachine stateMachine) : BaseState(stateMachine)
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)
     {
-        StateMachine.EligibleVoters.Add(player);
+        KoC.EligibleVoters.Add(player);
     }
 
     private void OnLevelLoaded()
@@ -33,7 +33,7 @@ public class StatePreVoting(StateMachine stateMachine) : BaseState(stateMachine)
             return;
         }
 
-        if (!LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, StateMachine.VotingLevels))
+        if (!LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, KoC.VotingLevels))
         {
             Plugin.Instance.Messenger
                 .LogWarning(
@@ -43,14 +43,14 @@ public class StatePreVoting(StateMachine stateMachine) : BaseState(stateMachine)
         }
 
         Plugin.Instance.Messenger.LogSuccess("Voting started");
-        StateMachine.TransitionTo(new StateVoting(StateMachine));
+        KoC.TransitionTo(new StateVoting(KoC));
     }
 
 
     private void RegisterSubmissionLevel()
     {
-        StateMachine.OverrideSubmission = true;
-        StateMachine.TransitionTo(new StateRegisterSubmission(StateMachine));
+        KoC.OverrideSubmission = true;
+        KoC.TransitionTo(new StateRegisterSubmission(KoC));
     }
 
     public override void Exit()

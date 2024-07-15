@@ -1,8 +1,8 @@
 ﻿namespace KoC.states;
 
-public abstract class BaseState(StateMachine stateMachine)
+public abstract class BaseState(KoC koC)
 {
-    public StateMachine StateMachine { get; } = stateMachine;
+    public KoC KoC { get; } = koC;
 
     public abstract void Enter();
     public abstract void Exit();

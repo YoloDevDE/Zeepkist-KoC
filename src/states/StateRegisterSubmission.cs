@@ -10,7 +10,7 @@ using ZeepSDK.Racing;
 
 namespace KoC.states;
 
-public class StateRegisterSubmission(StateMachine stateMachine) : BaseState(stateMachine)
+public class StateRegisterSubmission(KoC koC) : BaseState(koC)
 {
     public override void Enter()
     {
@@ -23,13 +23,13 @@ public class StateRegisterSubmission(StateMachine stateMachine) : BaseState(stat
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)
     {
-        StateMachine.EligibleVoters.Add(player);
+        KoC.EligibleVoters.Add(player);
     }
 
 
     private void OverrideSubmissionLevel()
     {
-        StateMachine.OverrideSubmission = true;
+        KoC.OverrideSubmission = true;
         OnLevelLoaded();
     }
 
@@ -85,7 +85,7 @@ public class StateRegisterSubmission(StateMachine stateMachine) : BaseState(stat
 
     private void RegisterSubmissionLevel(SubmissionLevel submissionLevel)
     {
-        if (!StateMachine.OverrideSubmission)
+        if (!KoC.OverrideSubmission)
         {
             if (IsAdventureLevel())
             {
@@ -95,7 +95,7 @@ public class StateRegisterSubmission(StateMachine stateMachine) : BaseState(stat
                 return;
             }
 
-            if (LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, StateMachine.VotingLevels))
+            if (LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, KoC.VotingLevels))
             {
                 Plugin.Instance.Messenger.LogWarning(
                     "Submission-Level expected but got Voting-Level. You may want to skip to a Submission-Level. If you want to vote this level type '/koc register' and continue as usual.",
@@ -104,10 +104,11 @@ public class StateRegisterSubmission(StateMachine stateMachine) : BaseState(stat
             }
         }
 
-        StateMachine.SubmissionLevel = submissionLevel;
-        Plugin.Instance.Messenger.LogSuccess($"Submission-Level registered for Voting: '{StateMachine.SubmissionLevel.Name}'", 5F);
-        StateMachine.OverrideSubmission = false;
-        StateMachine.TransitionTo(new StatePreVoting(StateMachine));
+        KoC.SubmissionLevel = submissionLevel;
+        KoC.CachedSubmissionLevel = submissionLevel;
+        Plugin.Instance.Messenger.LogSuccess($"Submission-Level registered for Voting: '{KoC.SubmissionLevel.Name}'", 5F);
+        KoC.OverrideSubmission = false;
+        KoC.TransitionTo(new StatePreVoting(KoC));
     }
 
     private bool IsAdventureLevel()

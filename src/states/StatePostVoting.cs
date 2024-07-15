@@ -4,7 +4,7 @@ using ZeepSDK.Racing;
 
 namespace KoC.states;
 
-public class StatePostVoting(StateMachine stateMachine) : BaseState(stateMachine)
+public class StatePostVoting(KoC koC) : BaseState(koC)
 {
     public override void Enter()
     {
@@ -14,7 +14,7 @@ public class StatePostVoting(StateMachine stateMachine) : BaseState(stateMachine
 
     private void OnLevelLoaded()
     {
-        StateMachine.TransitionTo(new StateRegisterSubmission(StateMachine));
+        KoC.TransitionTo(new StateRegisterSubmission(KoC));
     }
 
 
@@ -22,9 +22,9 @@ public class StatePostVoting(StateMachine stateMachine) : BaseState(stateMachine
     {
         foreach (LeaderboardItem item in ZeepkistNetwork.Leaderboard)
         {
-            if (item.Time < StateMachine.CurrentVotingLevel.ClutchFinishTime)
+            if (item.Time < KoC.CurrentVotingLevel.ClutchFinishTime)
             {
-                StateMachine.KickIfNotNeutralPlayer(item);
+                KoC.KickIfNotNeutralPlayer(item);
             }
         }
     }

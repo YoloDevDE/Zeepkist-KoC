@@ -7,15 +7,19 @@ using ZeepSDK.Racing;
 
 namespace KoC.states;
 
-public class StateDisabled(StateMachine stateMachine) : BaseState(stateMachine)
+public class StateDisabled(KoC koC) : BaseState(koC)
 {
     public override void Enter()
     {
         ChatApi.SendMessage("/joinmessage off");
         ChatApi.SendMessage("/servermessage remove");
-        StateMachine.Enabled = false;
-        StateMachine.SubmissionLevel = null;
+        KoC.Enabled = false;
+        KoC.SubmissionLevel = null;
         MultiplayerApi.ConnectedToGame += OnConnectedToOnlineLobby;
+        if (MultiplayerApi.IsPlayingOnline)
+        {
+            OnConnectedToOnlineLobby();
+        }
     }
 
     public void OnConnectedToOnlineLobby()
@@ -40,16 +44,16 @@ public class StateDisabled(StateMachine stateMachine) : BaseState(stateMachine)
         ulong workshopId = ZeepkistNetwork.CurrentLobby.WorkshopID;
         string authorName = PlayerManager.Instance.currentMaster.GlobalLevel.Author;
         string levelName = PlayerManager.Instance.currentMaster.GlobalLevel.Name;
-        if (!LevelUtils.IsVotingLevel(levelUid, StateMachine.VotingLevels))
+        if (!LevelUtils.IsVotingLevel(levelUid, KoC.VotingLevels))
         {
-            StateMachine.CachedSubmissionLevel = await LevelUtils.RegisterSubmissionLevel(levelUid, workshopId, authorName, levelName);
-            StateMachine.InitializeEligibleVoters();
+            KoC.CachedSubmissionLevel = await LevelUtils.RegisterSubmissionLevel(levelUid, workshopId, authorName, levelName);
+            KoC.InitializeEligibleVoters();
             Plugin.Instance.GetLogger().LogInfo($"Level Cached: {levelName} by {authorName} -- UID: {levelUid} -- WorkshopId: {workshopId}");
-            Plugin.Instance.GetLogger().LogInfo($"Eligible Voters: {BlameNic(StateMachine.EligibleVoters)}");
+            Plugin.Instance.GetLogger().LogInfo($"Eligible Voters: {PrintEligibleVoters(KoC.EligibleVoters)}");
         }
     }
 
-    private string BlameNic(List<ZeepkistNetworkPlayer> networkPlayers)
+    private string PrintEligibleVoters(List<ZeepkistNetworkPlayer> networkPlayers)
     {
         string str = "[";
         foreach (ZeepkistNetworkPlayer zeepkistNetworkPlayer in networkPlayers)
@@ -63,7 +67,7 @@ public class StateDisabled(StateMachine stateMachine) : BaseState(stateMachine)
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)
     {
-        StateMachine.EligibleVoters.Add(player);
+        KoC.EligibleVoters.Add(player);
     }
 
 
@@ -73,6 +77,6 @@ public class StateDisabled(StateMachine stateMachine) : BaseState(stateMachine)
         MultiplayerApi.DisconnectedFromGame -= OnDisconnectedToOnlineLobby;
         RacingApi.LevelLoaded -= OnLevelLoaded;
         MultiplayerApi.PlayerJoined -= OnPlayerJoined;
-        StateMachine.Enabled = true;
+        KoC.Enabled = true;
     }
 }

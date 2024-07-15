@@ -1,6 +1,6 @@
 ﻿namespace KoC.states;
 
-public class StateMegaKick(StateMachine stateMachine) : BaseState(stateMachine)
+public class StateMegaKick(KoC koC) : BaseState(koC)
 {
     public override void Enter()
     {

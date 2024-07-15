@@ -10,15 +10,15 @@ using ZeepSDK.Racing;
 
 namespace KoC.states;
 
-public class StateVoting(StateMachine stateMachine) : BaseState(stateMachine)
+public class StateVoting(KoC koC) : BaseState(koC)
 {
     private VotingLevel CurrentVotingLevel { get; set; }
 
     public override void Enter()
     {
         // Initialize the current voting level
-        CurrentVotingLevel = StateMachine.GetVotingLevelByUid(ZeepkistNetwork.CurrentLobby.LevelUID);
-        StateMachine.CurrentVotingLevel = CurrentVotingLevel;
+        CurrentVotingLevel = KoC.GetVotingLevelByUid(ZeepkistNetwork.CurrentLobby.LevelUID);
+        KoC.CurrentVotingLevel = CurrentVotingLevel;
         // Subscribe to events
         ZeepkistNetwork.PlayerResultsChanged += OnPlayerResultsChanged;
         MultiplayerApi.PlayerJoined += OnPlayerJoined;
@@ -71,29 +71,29 @@ public class StateVoting(StateMachine stateMachine) : BaseState(stateMachine)
     private void OnRoundEnded()
     {
         OnVotingFinished();
-        StateMachine.TransitionTo(new StatePostVoting(StateMachine));
+        KoC.TransitionTo(new StatePostVoting(KoC));
     }
 
     private void OnVotingFinished()
     {
-        if (StateMachine.SubmissionLevel.VotesClutch < StateMachine.SubmissionLevel.VotesKick)
+        if (KoC.SubmissionLevel.VotesClutch < KoC.SubmissionLevel.VotesKick)
         {
             ChatApi.SendMessage("<br>--KICK--<br>" +
-                                $"Sorry to {StateMachine.SubmissionLevel.Author} :/<br>" +
-                                $"You flopped with {StateMachine.SubmissionLevel.VotesClutch} to {StateMachine.SubmissionLevel.VotesKick} votes..<br>" +
+                                $"Sorry to {KoC.SubmissionLevel.Author} :/<br>" +
+                                $"You flopped with {KoC.SubmissionLevel.VotesClutch} to {KoC.SubmissionLevel.VotesKick} votes..<br>" +
                                 "You will now get kicked o7");
             ChatApi.SendMessage(ParseMessage("/servermessage red 0 " + Plugin.Instance.ResultServerMessage));
         }
         else
         {
             ChatApi.SendMessage("<br>--ClUTCH--<br>" +
-                                $"Congratulations to {StateMachine.SubmissionLevel.Author} :party:<br>" +
-                                $"You clutched with {StateMachine.SubmissionLevel.VotesClutch} to {StateMachine.SubmissionLevel.VotesKick} votes!<br>" +
+                                $"Congratulations to {KoC.SubmissionLevel.Author} :party:<br>" +
+                                $"You clutched with {KoC.SubmissionLevel.VotesClutch} to {KoC.SubmissionLevel.VotesKick} votes!<br>" +
                                 "Enjoy your freewin!");
             ChatApi.SendMessage(ParseMessage("/servermessage green 0 " + Plugin.Instance.ResultServerMessage));
         }
 
-        StateMachine.TransitionTo(new StatePostVoting(StateMachine));
+        KoC.TransitionTo(new StatePostVoting(KoC));
     }
 
     private void OnPlayerResultsChanged(ZeepkistNetworkPlayer player)
@@ -103,19 +103,19 @@ public class StateVoting(StateMachine stateMachine) : BaseState(stateMachine)
 
     private void ProcessVotes()
     {
-        StateMachine.SubmissionLevel.ResetVotes();
+        KoC.SubmissionLevel.ResetVotes();
 
         foreach (LeaderboardItem leaderboardItem in ZeepkistNetwork.Leaderboard)
         {
             // Kick players with a time below the ClutchFinishTime
             if (IsUsingMapperFinish(leaderboardItem))
             {
-                StateMachine.KickIfNotNeutralPlayer(leaderboardItem);
+                KoC.KickIfNotNeutralPlayer(leaderboardItem);
                 continue;
             }
 
             // Skip eligible voters if only eligible players can vote
-            if (!StateMachine.IsEligibleForVoting(leaderboardItem.SteamID) && Plugin.Instance.OnlyEligiblePlayersCanVote.Value)
+            if (!KoC.IsEligibleForVoting(leaderboardItem.SteamID) && Plugin.Instance.OnlyEligiblePlayersCanVote.Value)
             {
                 continue;
             }
@@ -123,11 +123,11 @@ public class StateVoting(StateMachine stateMachine) : BaseState(stateMachine)
             // Count votes for kick or clutch based on the player's time
             if (leaderboardItem.Time >= CurrentVotingLevel.KickFinishTime)
             {
-                StateMachine.SubmissionLevel.VotesKick++;
+                KoC.SubmissionLevel.VotesKick++;
             }
             else
             {
-                StateMachine.SubmissionLevel.VotesClutch++;
+                KoC.SubmissionLevel.VotesClutch++;
             }
         }
 
@@ -143,8 +143,8 @@ public class StateVoting(StateMachine stateMachine) : BaseState(stateMachine)
     private void UpdateVotingResultsMessage()
     {
         ChatApi.SendMessage($"/servermessage yellow 0 " +
-                            $"{StateMachine.SubmissionLevel.Name} by {StateMachine.SubmissionLevel.Author}<br>" +
-                            $"Kick: {StateMachine.SubmissionLevel.VotesKick} | Clutch: {StateMachine.SubmissionLevel.VotesClutch}")
+                            $"{KoC.SubmissionLevel.Name} by {KoC.SubmissionLevel.Author}<br>" +
+                            $"Kick: {KoC.SubmissionLevel.VotesKick} | Clutch: {KoC.SubmissionLevel.VotesClutch}")
             ;
     }
 
@@ -152,16 +152,16 @@ public class StateVoting(StateMachine stateMachine) : BaseState(stateMachine)
     private string ParseMessage(string message)
     {
         return message
-                .Replace("%a", StateMachine.SubmissionLevel.Author)
-                .Replace("%l", StateMachine.SubmissionLevel.Name)
+                .Replace("%a", KoC.SubmissionLevel.Author)
+                .Replace("%l", KoC.SubmissionLevel.Name)
                 .Replace("%r", VotingResultString())
-                .Replace("%c", StateMachine.SubmissionLevel.VotesClutch.ToString())
-                .Replace("%k", StateMachine.SubmissionLevel.VotesKick.ToString())
+                .Replace("%c", KoC.SubmissionLevel.VotesClutch.ToString())
+                .Replace("%k", KoC.SubmissionLevel.VotesKick.ToString())
             ;
     }
 
     private string VotingResultString()
     {
-        return StateMachine.SubmissionLevel.VotesClutch >= StateMachine.SubmissionLevel.VotesKick ? "Clutch" : "Kick";
+        return KoC.SubmissionLevel.VotesClutch >= KoC.SubmissionLevel.VotesKick ? "Clutch" : "Kick";
     }
 }
