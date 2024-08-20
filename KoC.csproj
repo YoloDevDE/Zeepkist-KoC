@@ -4,7 +4,7 @@
         <TargetFramework>net472</TargetFramework>
         <AssemblyName>KoC</AssemblyName>
         <Description>Kick or Clutch Mod</Description>
-        <Version>1.16.7</Version>
+        <Version>1.16.8</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
@@ -13,6 +13,8 @@
             https://nuget.samboy.dev/v3/index.json
         </RestoreAdditionalProjectSources>
         <RootNamespace>KoC</RootNamespace>
+        <Title>Kick or Clutch</Title>
+        <Authors>Hi Im Yolo</Authors>
     </PropertyGroup>
 
     <!-- NuGet Package Dependencies -->
@@ -25,7 +27,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
         <PackageReference Include="UnityEngine.Modules" Version="2021.3.10" IncludeAssets="compile"/>
         <PackageReference Include="Zeepkist.GameLibs" Version="16.999.397-alpha"/>
-        <PackageReference Include="ZeepSDK" Version="1.32.3" />
+        <PackageReference Include="ZeepSDK" Version="1.35.0" />
     </ItemGroup>
 
     <!-- Conditional Dependencies -->
