@@ -76,13 +76,18 @@ public class StateVoting(KoC koC) : BaseState(koC)
 
     private void OnVotingFinished()
     {
+        // Assemble the final message
+        string resultServerMessage =
+
+            $"/servermessage white 0 <align=\"left\"><margin-left=\"50%\"><size=\"30%\"><br><br>" +
+            $"<#ff9900>{KoC.SubmissionLevel.Name} <#ffffff>by <#ff9900>{KoC.SubmissionLevel.Author}<#ffffff>";
         if (KoC.SubmissionLevel.VotesClutch < KoC.SubmissionLevel.VotesKick)
         {
             ChatApi.SendMessage("<br>--KICK--<br>" +
                                 $"Sorry to {KoC.SubmissionLevel.Author} :/<br>" +
                                 $"You flopped with {KoC.SubmissionLevel.VotesClutch} to {KoC.SubmissionLevel.VotesKick} votes..<br>" +
                                 "You will now get kicked o7");
-            ChatApi.SendMessage(ParseMessage("/servermessage red 0 " + Plugin.Instance.ResultServerMessage));
+            resultServerMessage += " got <#ff0000>KICKED";
         }
         else
         {
@@ -90,8 +95,12 @@ public class StateVoting(KoC koC) : BaseState(koC)
                                 $"Congratulations to {KoC.SubmissionLevel.Author} :party:<br>" +
                                 $"You clutched with {KoC.SubmissionLevel.VotesClutch} to {KoC.SubmissionLevel.VotesKick} votes!<br>" +
                                 "Enjoy your freewin!");
-            ChatApi.SendMessage(ParseMessage("/servermessage green 0 " + Plugin.Instance.ResultServerMessage));
+           
+            resultServerMessage += " got <#00ff00>CLUTCHED";
         }
+
+        
+        ChatApi.SendMessage(resultServerMessage + "<br><br><br><br><br>");
 
         KoC.TransitionTo(new StatePostVoting(KoC));
     }
@@ -140,13 +149,32 @@ public class StateVoting(KoC koC) : BaseState(koC)
     }
 
 
-    private void UpdateVotingResultsMessage()
-    {
-        ChatApi.SendMessage($"/servermessage yellow 0 " +
-                            $"{KoC.SubmissionLevel.Name} by {KoC.SubmissionLevel.Author}<br>" +
-                            $"Kick: {KoC.SubmissionLevel.VotesKick} | Clutch: {KoC.SubmissionLevel.VotesClutch}")
-            ;
-    }
+private void UpdateVotingResultsMessage()
+{
+    int totalVotes = KoC.SubmissionLevel.VotesKick + KoC.SubmissionLevel.VotesClutch;
+
+    // Calculate the ratio for clutch and kick votes
+    double clutchRatio = totalVotes > 0 ? (double)KoC.SubmissionLevel.VotesClutch / totalVotes : 0.5;
+    int indicatorLength = 15;
+    // Calculate the indicator position relative to the total dots (scale to 22 positions)
+    int indicatorPosition = (int)Math.Round(clutchRatio * (2 * (indicatorLength + 1)));
+
+    // Insert the moving indicator at the calculated position
+    string movingIndicator = new string(' ', indicatorPosition) + "^";
+    string dots = new string('.', indicatorLength);
+    // Format the votes to always display as two digits
+
+    // Format the votes to always display at least two characters, padded with spaces
+    string votesKickFormatted = KoC.SubmissionLevel.VotesKick.ToString().PadLeft(2, ' ').PadLeft(indicatorLength+1 - "Kick -> ".Length);
+    string votesClutchFormatted = KoC.SubmissionLevel.VotesClutch.ToString().PadRight(2, ' ').PadRight(indicatorLength+1 - " <- Clutch".Length);
+    // Assemble the final message
+    ChatApi.SendMessage($"/servermessage white 0 <align=\"left\"><margin-left=\"50%\"><size=\"30%\"><br><br>" +
+                        $"<#ff9900>{KoC.SubmissionLevel.Name} <#ffffff>by <#ff9900>{KoC.SubmissionLevel.Author}<br><br><#ffffff>" +
+                        $"<#ffffff>Kick -> <#ff0000>{votesKickFormatted}<#ffffff>|<#00ff00>{votesClutchFormatted}<#ffffff> <- Clutch<br>" +
+                        $"<#ffffff>|<#ff0000>{dots}<#ffffff>|<#00ff00>{dots}<#ffffff>|<br>" +
+                        $"{movingIndicator}");
+}
+
 
 
     private string ParseMessage(string message)
