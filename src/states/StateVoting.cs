@@ -27,12 +27,12 @@ public class StateVoting(KoC koC) : BaseState(koC)
         FavoritePlayerChangedNotifier.FavoritePlayersChanged += OnFavoritePlayersChanged;
         CommandVotingResult.OnHandle += OnVotingFinished;
 
-        foreach (ZeepkistNetworkPlayer zeepkistNetworkPlayer in ZeepkistNetwork.PlayerList)
+        foreach (ZeepkistNetworkPlayer player in ZeepkistNetwork.PlayerList)
         {
-            if (!koC.EligibleVoters.Contains(zeepkistNetworkPlayer))
+            if (!koC.IsEligibleForVoting(player.SteamID) && Plugin.Instance.OnlyEligiblePlayersCanVote.Value)
             {
-                ZeepkistNetwork.CustomLeaderBoard_BlockPlayerFromSettingTime(zeepkistNetworkPlayer.SteamID, false);
-                ZeepkistNetwork.SendCustomChatMessage(false, zeepkistNetworkPlayer.SteamID, "You are not eligible to vote this time, because you haven't played the previous map", "KoC");
+                ZeepkistNetwork.CustomLeaderBoard_BlockPlayerFromSettingTime(player.SteamID, false);
+                ZeepkistNetwork.SendCustomChatMessage(false, player.SteamID, "You are not eligible to vote because you haven't played on the previous map", "KoC");
             }
         }
 
@@ -63,10 +63,10 @@ public class StateVoting(KoC koC) : BaseState(koC)
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)
     {
-        if (!koC.EligibleVoters.Contains(player))
+        if (!koC.IsEligibleForVoting(player.SteamID) && Plugin.Instance.OnlyEligiblePlayersCanVote.Value)
         {
             ZeepkistNetwork.CustomLeaderBoard_BlockPlayerFromSettingTime(player.SteamID, false);
-            ZeepkistNetwork.SendCustomChatMessage(false, player.SteamID, "You are not eligible to vote this time, because you haven't played the previous map", "KoC");
+            ZeepkistNetwork.SendCustomChatMessage(false, player.SteamID, "You are not eligible to vote because you haven't played on the previous map", "KoC");
             return;
         }
 
@@ -108,7 +108,7 @@ public class StateVoting(KoC koC) : BaseState(koC)
             ChatApi.SendMessage("<br>--ClUTCH--<br>" +
                                 $"Congratulations to {KoC.SubmissionLevel.Author} :party:<br>" +
                                 $"You clutched with {KoC.SubmissionLevel.VotesClutch} to {KoC.SubmissionLevel.VotesKick} votes!<br>" +
-                                "Enjoy your freewin!");
+                                "Enjoy your free win!");
 
             resultServerMessage += " got <#00ff00>CLUTCHED";
         }
@@ -185,40 +185,46 @@ public class StateVoting(KoC koC) : BaseState(koC)
     {
         int totalVotes = KoC.SubmissionLevel.VotesKick + KoC.SubmissionLevel.VotesClutch;
 
-        // Calculate the ratio for clutch and kick votes
+        // Calculate clutch and kick ratios (sum is always 1)
         double clutchRatio = totalVotes > 0 ? (double)KoC.SubmissionLevel.VotesClutch / totalVotes : 0.5;
-        int indicatorLength = 15;
-        // Calculate the indicator position relative to the total dots (scale to 22 positions)
-        int indicatorPosition = (int)Math.Round(clutchRatio * (2 * (indicatorLength + 1)));
+        double kickRatio = 1.0 - clutchRatio; // complementary ratio
 
+        int indicatorLength = 15; // total length of the indicator in dots
 
-        // Insert the moving indicator at the calculated position
-        string movingIndicator = new string(' ', indicatorPosition) + "|";
-
-        string dots = new string(' ', indicatorLength);
-        if (clutchRatio > 0.5)
+        // Determine the length of each colored segment based on the ratios
+        int clutchDots = (int)Math.Round(clutchRatio * indicatorLength * 2);
+        int kickDots = indicatorLength * 2 - clutchDots;
+        string dots = new string(' ', indicatorLength - 1);
+        string clutchPadding = new string(' ', Math.Max(0, clutchDots - (clutchRatio <= 0.5 ? 0 : 1)));
+        // Construct the line with green on the left and red on the right
+        string ratioBar =
+            "<mark=#00ff00AA>" +
+            new string('.', clutchDots) +
+            "</mark>" + // Green for clutch
+            "<mark=#ff0000AA>" +
+            new string('.', kickDots) +
+            "</mark>"; // Red for kick
+        if (totalVotes == 0)
         {
-            movingIndicator = new string(' ', dots.Length + 1) + "<mark=#00ff00AA>" + new string('.', indicatorPosition - dots.Length - 1) + "|" + "</mark>";
+            ratioBar = "";
         }
-        else if (clutchRatio < 0.5)
-        {
-            movingIndicator = new string(' ', indicatorPosition) + "<mark=#ff0000AA>" + "|" + new string('.', dots.Length - indicatorPosition + 1) + "</mark>";
-        }
-        // Format the votes to always display as two digits
 
-        // Format the votes to always display at least two characters, padded with spaces
-        string votesKickFormatted = KoC.SubmissionLevel.VotesKick.ToString().PadLeft(2, ' ')
-            .PadLeft(indicatorLength + 1 - "Kick -> ".Length);
-        string votesClutchFormatted = KoC.SubmissionLevel.VotesClutch.ToString()
-            .PadRight(2, ' ')
-            .PadRight(indicatorLength + 1 - " <- Clutch".Length);
-        // Assemble the final message
+        string votesKickFormatted = KoC.SubmissionLevel.VotesKick.ToString().PadLeft(indicatorLength);
+        string votesClutchFormatted = KoC.SubmissionLevel.VotesClutch.ToString();
+
+
+        string kickText = "Kick" + "Clutch".PadLeft(dots.Length * 2 - 2);
         ChatApi.SendMessage(
                 $"/servermessage white 0 <align=\"left\"><margin-left=\"50%\"><size=\"30%\"><br><br>" +
                 $"<#ff9900>{KoC.SubmissionLevel.Name} <#ffffff>by <#ff9900>{KoC.SubmissionLevel.Author}<br><br><#ffffff>" +
-                $"<#ffffff>Kick -> <#ff0000>{votesKickFormatted}<#ffffff>|<#00ff00>{votesClutchFormatted}<#ffffff> <- Clutch<br>" +
-                $"{movingIndicator}" +
-                $"<pos=0><#ffffff>|<#ff0000>{dots}<#ffffff>|<#00ff00>{dots}<#ffffff>|"
+                $"<#ffffff>{kickText}" +
+                $"<pos=0><#ff0000>{votesKickFormatted}<#ffffff>|<#00ff00>{votesClutchFormatted}<#ffffff><br>" +
+                $"<pos=0>{ratioBar}" +
+                $"<pos=0><#ffffff>|{dots}{dots}|" +
+                $"<pos=0><#ffffff> {dots}|" +
+                $"<pos=0><voffset=-.90em><#ffffff>{clutchPadding}^</voffset>" +
+                $"<pos=0><#ffffff>{clutchPadding}|" +
+                $"<pos=0><voffset=.40em><rotate=180><#ffffff>{clutchPadding}^</rotate></voffset>"
             )
             ;
     }
