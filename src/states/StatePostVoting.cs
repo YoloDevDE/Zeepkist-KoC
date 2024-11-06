@@ -1,5 +1,4 @@
 ﻿using ZeepkistClient;
-using ZeepkistNetworking;
 using ZeepSDK.Racing;
 
 namespace KoC.states;
@@ -20,12 +19,9 @@ public class StatePostVoting(KoC koC) : BaseState(koC)
 
     private void OnPlayerResultsChanged(ZeepkistNetworkPlayer player)
     {
-        foreach (LeaderboardItem item in ZeepkistNetwork.Leaderboard)
+        if (player.CurrentResult?.Time < KoC.CurrentVotingLevel.ClutchFinishTime)
         {
-            if (item.Time < KoC.CurrentVotingLevel.ClutchFinishTime)
-            {
-                KoC.KickIfNotNeutralPlayer(item);
-            }
+            KoC.RemoveFromLeaderBoardIfNotNeutral(player);
         }
     }
 

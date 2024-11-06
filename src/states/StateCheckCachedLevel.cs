@@ -9,7 +9,8 @@ public class StateCheckCachedLevel(KoC koC) : BaseState(koC)
     {
         string levelUid = ZeepkistNetwork.CurrentLobby.LevelUID;
 
-        if (LevelUtils.IsVotingLevel(levelUid, KoC.VotingLevels) && KoC.SubmissionLevel == null)
+        if (LevelUtils.IsVotingLevel(levelUid, KoC.VotingLevels) &&
+            KoC.SubmissionLevel == null)
         {
             KoC.SubmissionLevel = KoC.CachedSubmissionLevel;
             KoC.TransitionTo(new StateVoting(KoC));

@@ -17,7 +17,8 @@ public static class LevelUtils
         return PlayerManager.Instance.currentMaster.GlobalLevel.UseAvonturenLevel;
     }
 
-    public static async Task<SubmissionLevel> RegisterSubmissionLevel(string levelUid, ulong workshopId, string authorName, string levelName)
+    public static async Task<SubmissionLevel> RegisterSubmissionLevel(string levelUid, ulong workshopId,
+        string authorName, string levelName)
     {
         const int maxRetries = 5;
         return await RetryPolicy.ExecuteAsync(async () =>

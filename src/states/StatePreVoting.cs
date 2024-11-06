@@ -33,7 +33,8 @@ public class StatePreVoting(KoC koC) : BaseState(koC)
             return;
         }
 
-        if (!LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, KoC.VotingLevels))
+        if (!LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID,
+                KoC.VotingLevels))
         {
             Plugin.Instance.Messenger
                 .LogWarning(

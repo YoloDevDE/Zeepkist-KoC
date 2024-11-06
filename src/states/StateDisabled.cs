@@ -46,10 +46,14 @@ public class StateDisabled(KoC koC) : BaseState(koC)
         string levelName = PlayerManager.Instance.currentMaster.GlobalLevel.Name;
         if (!LevelUtils.IsVotingLevel(levelUid, KoC.VotingLevels))
         {
-            KoC.CachedSubmissionLevel = await LevelUtils.RegisterSubmissionLevel(levelUid, workshopId, authorName, levelName);
+            KoC.CachedSubmissionLevel = await LevelUtils.RegisterSubmissionLevel(levelUid,
+                workshopId, authorName, levelName);
             KoC.InitializeEligibleVoters();
-            Plugin.Instance.GetLogger().LogInfo($"Level Cached: {levelName} by {authorName} -- UID: {levelUid} -- WorkshopId: {workshopId}");
-            Plugin.Instance.GetLogger().LogInfo($"Eligible Voters: {PrintEligibleVoters(KoC.EligibleVoters)}");
+            Plugin.Instance.GetLogger()
+                .LogInfo(
+                    $"Level Cached: {levelName} by {authorName} -- UID: {levelUid} -- WorkshopId: {workshopId}");
+            Plugin.Instance.GetLogger()
+                .LogInfo($"Eligible Voters: {PrintEligibleVoters(KoC.EligibleVoters)}");
         }
     }
 

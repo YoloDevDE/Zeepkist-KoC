@@ -24,9 +24,11 @@ public class ChatUtils
 
     public static async void RemoveJoinMessage()
     {
-        if (ZeepkistNetwork.ChatMessages.Any(msg => msg.Message.Contains("[host] Join message set and enabled!")))
+        if (ZeepkistNetwork.ChatMessages.Any(msg =>
+                msg.Message.Contains("[host] Join message set and enabled!")))
         {
-            ZeepkistNetwork.ChatMessages.RemoveAll(msg => msg.Message.Contains("[host] Join message set and enabled!"));
+            ZeepkistNetwork.ChatMessages.RemoveAll(msg =>
+                msg.Message.Contains("[host] Join message set and enabled!"));
             PlayerManager.Instance.currentMaster.OnlineGameplayUI.ChatUI.OnClose();
             PlayerManager.Instance.currentMaster.OnlineGameplayUI.ChatUI.OnOpen();
             await RefreshChatAsync();

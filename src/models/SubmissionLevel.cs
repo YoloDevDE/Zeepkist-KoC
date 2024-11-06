@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using KoC.utils;
 
 namespace KoC.models;
@@ -9,18 +11,15 @@ public class SubmissionLevel(
     string levelName,
     string authorName)
 {
-    // Initialisiere AuthorSteamId synchron mit einem Platzhalterwert
-
     public ulong WorkshopId { get; set; } = workshopId;
-
     public string Name { get; set; } = levelName;
-
     public string LevelUid { get; set; } = levelUid;
-    public int VotesClutch { get; set; }
-    public int VotesKick { get; set; }
-
+    public List<Vote> Votes { get; } = new List<Vote>();
     public string Author { get; set; } = authorName;
     public ulong AuthorSteamId { get; set; }
+
+    public int VotesClutch => Votes.Count(v => !v.IsKick);
+    public int VotesKick => Votes.Count(v => v.IsKick);
 
     public async Task InitializeAsync()
     {
@@ -33,17 +32,44 @@ public class SubmissionLevel(
 
     public void ResetVotes()
     {
-        VotesClutch = 0;
-        VotesKick = 0;
+        Votes.Clear();
     }
 
-    public void AddVoteKick()
+    public void AddVoteKick(ulong steamId)
     {
-        VotesKick++;
+        Vote existingVote = Votes.FirstOrDefault(v => v.SteamId == steamId);
+
+        if (existingVote != null)
+        {
+            existingVote.IsKick = true;
+        }
+        else
+        {
+            Votes.Add(new Vote { SteamId = steamId, IsKick = true });
+        }
     }
 
-    public void AddVoteClutch()
+    public void AddVoteClutch(ulong steamId)
     {
-        VotesClutch++;
+        Vote existingVote = Votes.FirstOrDefault(v => v.SteamId == steamId);
+
+        if (existingVote != null)
+        {
+            existingVote.IsKick = false;
+        }
+        else
+        {
+            Votes.Add(new Vote { SteamId = steamId, IsKick = false });
+        }
+    }
+
+    public void RemoveVote(ulong steamId)
+    {
+        Vote existingVote = Votes.FirstOrDefault(v => v.SteamId == steamId);
+
+        if (existingVote != null)
+        {
+            Votes.Remove(existingVote);
+        }
     }
 }

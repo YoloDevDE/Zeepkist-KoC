@@ -47,12 +47,7 @@ public class StateRegisterSubmission(KoC koC) : BaseState(koC)
                 string authorName = PlayerManager.Instance.currentMaster.GlobalLevel.Author;
                 string levelName = PlayerManager.Instance.currentMaster.GlobalLevel.Name;
 
-                SubmissionLevel submissionLevel = new SubmissionLevel(
-                    levelUid: levelUid,
-                    workshopId: workshopId,
-                    levelName: levelName,
-                    authorName: authorName
-                );
+                SubmissionLevel submissionLevel = new SubmissionLevel(levelUid: levelUid, workshopId: workshopId, levelName: levelName, authorName: authorName);
                 await submissionLevel.InitializeAsync(); // Asynchrone Initialisierung ohne Blockierung
 
                 RegisterSubmissionLevel(submissionLevel);
@@ -61,11 +56,13 @@ public class StateRegisterSubmission(KoC koC) : BaseState(koC)
             catch (Exception e)
             {
                 attempt++;
-                Plugin.Instance.Messenger.LogError($"Attempt {attempt} to register submission level failed: {e.Message}", 5F);
+                Plugin.Instance.Messenger.LogError(
+                    $"Attempt {attempt} to register submission level failed: {e.Message}", 5F);
 
                 if (attempt >= maxRetries)
                 {
-                    Plugin.Instance.Messenger.LogError("Max retries reached. Unable to register submission level.", 5F);
+                    Plugin.Instance.Messenger.LogError(
+                        "Max retries reached. Unable to register submission level.", 5F);
                 }
                 else
                 {
@@ -95,7 +92,8 @@ public class StateRegisterSubmission(KoC koC) : BaseState(koC)
                 return;
             }
 
-            if (LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID, KoC.VotingLevels))
+            if (LevelUtils.IsVotingLevel(ZeepkistNetwork.CurrentLobby.LevelUID,
+                    KoC.VotingLevels))
             {
                 Plugin.Instance.Messenger.LogWarning(
                     "Submission-Level expected but got Voting-Level. You may want to skip to a Submission-Level. If you want to vote this level type '/koc register' and continue as usual.",
@@ -106,7 +104,8 @@ public class StateRegisterSubmission(KoC koC) : BaseState(koC)
 
         KoC.SubmissionLevel = submissionLevel;
         KoC.CachedSubmissionLevel = submissionLevel;
-        Plugin.Instance.Messenger.LogSuccess($"Submission-Level registered for Voting: '{KoC.SubmissionLevel.Name}'", 5F);
+        Plugin.Instance.Messenger.LogSuccess(
+            $"Submission-Level registered for Voting: '{KoC.SubmissionLevel.Name}'", 5F);
         KoC.OverrideSubmission = false;
         KoC.TransitionTo(new StatePreVoting(KoC));
     }

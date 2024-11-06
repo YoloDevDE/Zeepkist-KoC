@@ -4,7 +4,6 @@ using KoC.commands;
 using KoC.models;
 using KoC.utils;
 using ZeepkistClient;
-using ZeepkistNetworking;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
 
@@ -59,7 +58,9 @@ public class KoC
 
     private ZeepkistChatMessage StartMessage()
     {
-        string restrictedVoting = (Plugin.Instance.OnlyEligiblePlayersCanVote.Value ? "<#00FF00>ON" : "<#FF0000>OFF") + "</color>";
+        string restrictedVoting =
+            (Plugin.Instance.OnlyEligiblePlayersCanVote.Value ? "<#00FF00>ON" : "<#FF0000>OFF") +
+            "</color>";
         ZeepkistChatMessage msg = new ZeepkistChatMessage();
         msg.Message = "<i><#00AA00>Kick or Clutch started!<br>" +
                       $"Restricted Voting:</color> {restrictedVoting}</i>";
@@ -107,18 +108,24 @@ public class KoC
         return EligibleVoters.Any(voter => voter.SteamID == steamID);
     }
 
-    public void KickIfNotNeutralPlayer(LeaderboardItem item)
+    public bool RemoveFromLeaderBoardIfNotNeutral(ZeepkistNetworkPlayer item)
     {
-        if (IsLocalPlayer(item.SteamID) || IsFavorite(item.SteamID) || IsAuthor(item.SteamID))
+        if (IsLocalPlayer(item.SteamID) ||
+            IsFavorite(item.SteamID) ||
+            IsAuthor(item.SteamID))
         {
-            return;
+            return false;
         }
 
-        ZeepkistNetworkPlayer player = ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
+        ZeepkistNetworkPlayer player =
+            ZeepkistNetwork.PlayerList.FirstOrDefault(x => x.SteamID == item.SteamID);
         if (player != null)
         {
-            ZeepkistNetwork.KickPlayer(player);
+            ZeepkistNetwork.CustomLeaderBoard_RemovePlayerFromLeaderboard(player.SteamID, false);
+            ZeepkistNetwork.SendCustomChatMessage(false, player.SteamID, "You are not the mapper - Please vote according to your opinion on the previous map", "KoC");
         }
+
+        return true;
     }
 
     public void TransitionTo(BaseState state)
