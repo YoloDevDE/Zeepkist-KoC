@@ -28,7 +28,7 @@ public class Plugin : BaseUnityPlugin
     public ConfigEntry<bool> OnlyEligiblePlayersCanVote { get; set; }
 
     public string AutoMessage { get; set; } =
-        "DO NOT TAKE THE 'MAPPER FINISH'. IF YOU TAKE IT YOU WILL BE AUTOKICKED. IF YOU CAN'T READ YOU HAVE TO FEEL :Yannicsmile:";
+        "DO NOT TAKE THE 'MAPPER FINISH'. VOTE for 'KICK' or 'CLUTCH' instead if you liked or disliked the previous map :Yannicsmile:";
 
     public string ResultServerMessage { get; set; } = "%l by %a<br>%r";
 
