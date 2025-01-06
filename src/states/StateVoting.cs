@@ -180,6 +180,7 @@ public class StateVoting(KoC koC) : BaseState(koC)
         UpdateVotingResultsMessage();
     }
 
+    
 
     private void UpdateVotingResultsMessage()
     {
@@ -221,7 +222,7 @@ public class StateVoting(KoC koC) : BaseState(koC)
                 $"<pos=0><#ff0000>{votesKickFormatted}<#ffffff>|<#00ff00>{votesClutchFormatted}<#ffffff><br>" +
                 $"<pos=0>{ratioBar}" +
                 $"<pos=0><#ffffff>|{dots}{dots}|" +
-                $"<pos=0><#ffffff> {dots}|" +
+                $"<pos=0><#ffffff>{dots}|" +
                 $"<pos=0><voffset=-.90em><#ffffff>{clutchPadding}^</voffset>" +
                 $"<pos=0><#ffffff>{clutchPadding}|" +
                 $"<pos=0><voffset=.40em><rotate=180><#ffffff>{clutchPadding}^</rotate></voffset>"

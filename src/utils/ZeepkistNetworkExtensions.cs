@@ -11,4 +11,14 @@ public static class ZeepkistNetworkExtensions
     {
         return players.Count(player => favorites.Contains(player.Value.SteamID));
     }
+
+    public static void SendCustomLocalMessage(string message)
+    {
+        if (ZeepkistNetwork.NetworkClient == null)
+        {
+            return;
+        }
+
+        ZeepkistNetwork.SendCustomChatMessage(false, ZeepkistNetwork.LocalPlayer.SteamID, message, "");
+    }
 }

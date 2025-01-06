@@ -2,7 +2,6 @@
 using System.Linq;
 using KoC.commands;
 using KoC.models;
-using KoC.utils;
 using ZeepkistClient;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
@@ -40,10 +39,9 @@ public class KoC
     {
         if (!Enabled)
         {
-            ZeepkistNetwork.ChatMessageReceived += OnChatMessageReceived;
             MultiplayerApi.DisconnectedFromGame += Disable;
             TransitionTo(new StateCheckCachedLevel(this));
-            ChatUtils.AddNewChatMessage(StartMessage());
+            ZeepkistNetwork.SendCustomChatMessage(false, ZeepkistNetwork.LocalPlayer.SteamID, StartMessage(), new string('-', 28));
         }
         else
         {
@@ -51,19 +49,14 @@ public class KoC
         }
     }
 
-    private void OnChatMessageReceived(ZeepkistChatMessage msg)
-    {
-        ChatUtils.RemoveJoinMessage();
-    }
-
-    private ZeepkistChatMessage StartMessage()
+    private string StartMessage()
     {
         string restrictedVoting =
             (Plugin.Instance.OnlyEligiblePlayersCanVote.Value ? "<#00FF00>ON" : "<#FF0000>OFF") +
             "</color>";
-        ZeepkistChatMessage msg = new ZeepkistChatMessage();
-        msg.Message = "<i><#00AA00>Kick or Clutch started!<br>" +
-                      $"Restricted Voting:</color> {restrictedVoting}</i>";
+        string msg = "<br>" +
+                     "<color=#c2c2c2><color=#ff8800>Kick</color><color=#4444ff> or</color><color=#ff8800> Clutch</color> started!<br>" +
+                     $"Restricted Voting: {restrictedVoting}</color>";
         return msg;
     }
 
@@ -73,7 +66,6 @@ public class KoC
         {
             MessengerApi.Log("KoC stopped");
             MultiplayerApi.DisconnectedFromGame -= Disable;
-            ZeepkistNetwork.ChatMessageReceived -= OnChatMessageReceived;
             TransitionTo(new StateDisabled(this));
         }
         else

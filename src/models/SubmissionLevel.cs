@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using KoC.utils;
+using ZeepSDK.Chat;
 
 namespace KoC.models;
 
@@ -16,6 +17,8 @@ public class SubmissionLevel(
     public string LevelUid { get; set; } = levelUid;
     public List<Vote> Votes { get; } = new List<Vote>();
     public string Author { get; set; } = authorName;
+
+    public List<string> AllAuthors { get; set; } = [];
     public ulong AuthorSteamId { get; set; }
 
     public int VotesClutch => Votes.Count(v => !v.IsKick);
@@ -27,6 +30,13 @@ public class SubmissionLevel(
         {
             SteamUGCHelper steamUGCHelper = new SteamUGCHelper();
             AuthorSteamId = await steamUGCHelper.GetSteamIdFromWorkshopItemAsync(WorkshopId);
+            // List<string> contributorsSteamIdsAsync = await SteamWorkshopContributors.GetContributorsAsync(AuthorSteamId);
+            // foreach (string contributerSteamId in contributorsSteamIdsAsync)
+            // {
+            //     ChatApi.SendMessage($"[{contributerSteamId}]");
+            //     // ZeepkistNetwork.TryGetPlayer(contributerSteamId, out ZeepkistNetworkPlayer player);
+            //     AllAuthors.Add(contributerSteamId);
+            // }
         }
     }
 
