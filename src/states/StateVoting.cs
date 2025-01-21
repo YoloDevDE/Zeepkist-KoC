@@ -93,7 +93,8 @@ public class StateVoting(KoC koC) : BaseState(koC)
     {
         // Assemble the final message
         string resultServerMessage =
-            ChatUtils.UpdateVotingResultsMessage(votesClutch: koC.SubmissionLevel.VotesClutch, votesKick: koC.SubmissionLevel.VotesKick, submissionLevel: koC.SubmissionLevel);;
+            ChatUtils.UpdateVotingResultsMessage(votesClutch: koC.SubmissionLevel.VotesClutch, votesKick: koC.SubmissionLevel.VotesKick, submissionLevel: koC.SubmissionLevel);
+        ;
         if (KoC.SubmissionLevel.VotesClutch < KoC.SubmissionLevel.VotesKick)
         {
             ChatApi.SendMessage("<br>--KICK--<br>" +

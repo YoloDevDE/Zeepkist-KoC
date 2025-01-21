@@ -1,7 +1,6 @@
 ﻿using System;
 using KoC.models;
 using ZeepkistClient;
-using ZeepSDK.Chat;
 
 namespace KoC.utils;
 
@@ -64,19 +63,16 @@ public class ChatUtils
         string kickColorMark = $"<mark color={kickColorHex}88>" + new string('.', (int)Math.Ceiling(kickRatio * ratioMeterLength)) + "</mark>";
         string clutchColorMark = paddingLeft + $"<mark color={clutchColorHex}88>" + new string('.', (int)Math.Ceiling(clutchRatio * ratioMeterLength)) + "</mark>";
         string measureSticks = "|".PadRight((int)(ratioMeterLength * 0.5)) + "|".PadRight((int)(ratioMeterLength * 0.5)) + "|";
-        
-        
 
-        return (
-            $"/servermessage white 0 <align=\"left\"><margin-left=\"50%\"><size=\"25%\"><br>" +
-            $"<line-height=50%><u><b>{submissionLevel.Name}</b> <#ffffff>by <#ff9900>{submissionLevel.Author}</u><br><br><#ffffff>" +
-            $"<line-height=95%><#ffffff><b><u>{kocText}</u></b><br>" +
-            $"<pos=0>{ratioMeterString}" +
-            $"<pos=0>{measureSticks}" +
-            $"<pos=0>{kickColorMark}" +
-            $"<pos=0>{clutchColorMark}" +
-            $"<pos=0>{indicatorLine}<br>" +
-            $"<pos=0><color={kickColorHex}>{kickVotes}{kickPercentageStr.PadLeft(centerPosition - kickVotes.Length)}</color>|<color={clutchColorHex}>{clutchPercentageStr.PadRight(centerPosition - clutchVotes.Length)}{clutchVotes}</color><br>"
-        );
+
+        return $"/servermessage white 0 <align=\"left\"><margin-left=\"50%\"><size=\"25%\"><br>" +
+               $"<line-height=50%><u><b>{submissionLevel.Name}</b> <#ffffff>by <#ff9900>{submissionLevel.Author}</u><br><br><#ffffff>" +
+               $"<line-height=95%><#ffffff><b><u>{kocText}</u></b><br>" +
+               $"<pos=0>{ratioMeterString}" +
+               $"<pos=0>{measureSticks}" +
+               $"<pos=0>{kickColorMark}" +
+               $"<pos=0>{clutchColorMark}" +
+               $"<pos=0>{indicatorLine}<br>" +
+               $"<pos=0><color={kickColorHex}>{kickVotes}{kickPercentageStr.PadLeft(centerPosition - kickVotes.Length)}</color>|<color={clutchColorHex}>{clutchPercentageStr.PadRight(centerPosition - clutchVotes.Length)}{clutchVotes}</color><br>";
     }
 }
