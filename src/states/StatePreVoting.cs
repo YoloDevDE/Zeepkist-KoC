@@ -1,7 +1,6 @@
 ﻿using KoC.commands;
 using KoC.utils;
 using ZeepkistClient;
-using ZeepSDK.Chat;
 using ZeepSDK.Multiplayer;
 using ZeepSDK.Racing;
 
@@ -15,10 +14,7 @@ public class StatePreVoting(KoC koC) : BaseState(koC)
         CommandRegisterSubmissionLevel.OnHandle += RegisterSubmissionLevel;
         RacingApi.LevelLoaded += OnLevelLoaded;
         MultiplayerApi.PlayerJoined += OnPlayerJoined;
-        
     }
-
-
 
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)

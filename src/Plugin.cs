@@ -7,7 +7,10 @@ using HarmonyLib;
 using KoC.commands;
 using KoC.etc;
 using KoC.models;
+using KoC.utils;
 using Newtonsoft.Json;
+using UnityEngine;
+using ZeepSDK.Chat;
 using ZeepSDK.ChatCommands;
 using ZeepSDK.Messaging;
 using ZeepSDK.Storage;
@@ -19,6 +22,9 @@ namespace KoC;
 public class Plugin : BaseUnityPlugin
 {
     private Harmony _harmony;
+    private int clutchVotes;
+
+    private int kickVotes;
 
     public ITaggedMessenger Messenger { get; private set; }
     public states.KoC Machine { get; private set; }
@@ -45,6 +51,7 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
     }
 
+
     private void Start()
     {
         Instance = this;
@@ -58,6 +65,52 @@ public class Plugin : BaseUnityPlugin
         RegisterEvents();
         Machine = new states.KoC();
     }
+
+    private void Update()
+    {
+        bool pressed = false;
+        // Check for key presses and update the votes accordingly
+        if (Input.GetKeyDown(KeyCode.Keypad7))
+        {
+            clutchVotes++;
+            pressed = true;
+        }
+        else if (Input.GetKeyDown(KeyCode.Keypad1))
+        {
+            clutchVotes = Math.Max(0, clutchVotes - 1); // Ensure clutch votes are not less than 0
+            pressed = true;
+        }
+        else if (Input.GetKeyDown(KeyCode.Keypad9))
+        {
+            kickVotes++;
+            pressed = true;
+        }
+        else if (Input.GetKeyDown(KeyCode.Keypad3))
+        {
+            kickVotes = Math.Max(0, kickVotes - 1); // Ensure kick votes are not less than 0
+            pressed = true;
+        }
+
+
+        else if (Input.GetKeyDown(KeyCode.Keypad5))
+        {
+            kickVotes = 0;
+            clutchVotes = 0;
+            pressed = true;
+        }
+
+        if (!pressed)
+        {
+            return;
+        }
+
+        // Log or update results somewhere if needed. Example:
+        Logger.LogInfo($"Kick Votes: {kickVotes}, Clutch Votes: {clutchVotes}");
+
+        // If you want to send updates to a result message or similar:
+        ChatApi.SendMessage(ChatUtils.UpdateVotingResultsMessage(votesClutch: clutchVotes, votesKick: kickVotes));
+    }
+
 
     private void OnDestroy()
     {

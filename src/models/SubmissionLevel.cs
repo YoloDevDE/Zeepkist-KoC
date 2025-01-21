@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using KoC.utils;
-using ZeepSDK.Chat;
 
 namespace KoC.models;
 

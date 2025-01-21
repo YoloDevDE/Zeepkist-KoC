@@ -25,12 +25,12 @@
 
         <!-- Additional Plugins and Libraries -->
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
-        <PackageReference Include="HtmlAgilityPack" Version="1.11.72" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.11.72"/>
         <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" IncludeAssets="compile"/>
-        <PackageReference Include="Fody" Version="6.9.1" PrivateAssets="all" /> <!-- Fody package -->
-        <PackageReference Include="Costura.Fody" Version="6.0.0" PrivateAssets="all" /> <!-- Costura package -->
-        <PackageReference Include="Zeepkist.GameLibs" Version="16.67.1694" />
-        <PackageReference Include="ZeepSDK" Version="1.38.1" />
+        <PackageReference Include="Fody" Version="6.9.1" PrivateAssets="all"/> <!-- Fody package -->
+        <PackageReference Include="Costura.Fody" Version="6.0.0" PrivateAssets="all"/> <!-- Costura package -->
+        <PackageReference Include="Zeepkist.GameLibs" Version="16.69.1700"/>
+        <PackageReference Include="ZeepSDK" Version="1.38.7"/>
     </ItemGroup>
 
     <!-- Conditional Dependencies -->
