@@ -4,7 +4,6 @@ using KoC.commands;
 using KoC.models;
 using KoC.utils;
 using ZeepkistClient;
-using ZeepSDK.Chat;
 using ZeepSDK.Multiplayer;
 using ZeepSDK.Racing;
 
@@ -18,7 +17,6 @@ public class StateRegisterSubmission(KoC koC) : BaseState(koC)
         RacingApi.LevelLoaded += OnLevelLoaded;
         CommandRegisterSubmissionLevel.OnHandle += OverrideSubmissionLevel;
         MultiplayerApi.PlayerJoined += OnPlayerJoined;
-        ChatApi.SendMessage($"/joinmessage orange {Plugin.Instance.JoinMessageNormal}");
     }
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)

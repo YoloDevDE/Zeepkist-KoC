@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -7,7 +9,9 @@ using HarmonyLib;
 using KoC.commands;
 using KoC.etc;
 using KoC.models;
+using KoC.utils;
 using Newtonsoft.Json;
+using ZeepkistClient;
 using ZeepSDK.ChatCommands;
 using ZeepSDK.Messaging;
 using ZeepSDK.Storage;
@@ -18,7 +22,12 @@ namespace KoC;
 [BepInDependency("ZeepSDK")]
 public class Plugin : BaseUnityPlugin
 {
+    private float _clutchTime;
     private Harmony _harmony;
+    private float _kickTime;
+    private bool _waitingForClutchTime;
+
+    private bool _waitingForKickTime;
     private int clutchVotes;
 
     private int kickVotes;
@@ -31,7 +40,7 @@ public class Plugin : BaseUnityPlugin
     public ConfigEntry<bool> OnlyEligiblePlayersCanVote { get; set; }
 
     public string AutoMessage { get; set; } =
-        "DO NOT TAKE THE 'MAPPER FINISH'. VOTE for 'KICK' or 'CLUTCH' instead if you liked or disliked the previous map :Yannicsmile:";
+        "<color=#00ccff>Voting has started!</color><br>The <color=#ffcc00>MAPPER FINISH</color> is reserved for the map creators.<br>Please vote by taking either the <color=#00ff00>CLUTCH FINISH</color><br>if you enjoyed the map or the <color=#ff0000>KICK FINISH</color> if you didn't :YannicSmile:";
 
     public string ResultServerMessage { get; set; } = "%l by %a<br>%r";
 
@@ -54,7 +63,7 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         Messenger = MessengerApi.CreateTaggedMessenger("KoC");
         OnlyEligiblePlayersCanVote = Config.Bind("Voting",
-            "Restricted Voting<br>-> If this setting is <#00FF00>ON<#FFFFFF> only players who were present on the previous submission map can vote",
+            "Restricted Voting",
             true,
             new ConfigDescription(
                 "If this is set to 'true' only players who were present in the previous submission map can vote."));
@@ -112,7 +121,7 @@ public class Plugin : BaseUnityPlugin
     private void OnDestroy()
     {
         _harmony?.UnpatchSelf();
-        _harmony = null; 
+        _harmony = null;
     }
 
     public ManualLogSource GetLogger()
@@ -155,10 +164,67 @@ public class Plugin : BaseUnityPlugin
         return jsonWrapper.VotingLevels;
     }
 
+
     private void SaveCurrentLevelAsVotingLevelToJson()
     {
-        IModStorage modStorage = StorageApi.CreateModStorage(this);
+        // Start listening for chat messages
+        ZeepkistNetwork.ChatMessageReceived += OnChatMessageReceived;
+        CommandCreateVotingLevel.OnHandle -= SaveCurrentLevelAsVotingLevelToJson;
+        // Ask for kick time first
+        _waitingForKickTime = true;
+        ChatUtils.SendCustomChatMessage("Please enter the KICK finish time in seconds (e.g. '120' for 2 minutes):");
+    }
 
+    private void OnChatMessageReceived(ZeepkistChatMessage message)
+    {
+        if (message?.Player == null)
+        {
+            return;
+        }
+
+        if (!message.Player.IsLocal)
+        {
+            return;
+        }
+
+        string extractedMessage = Regex.Replace(message.Message.ToLowerInvariant(), @"[^\d" + CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator + "]", "");
+        if (_waitingForKickTime)
+        {
+            if (float.TryParse(extractedMessage, out float kickTime) && kickTime > 0)
+            {
+                _kickTime = kickTime;
+                _waitingForKickTime = false;
+                _waitingForClutchTime = true;
+                ChatUtils.SendCustomChatMessage("Please enter the CLUTCH finish time in seconds (e.g. '60' for 1 minute):");
+            }
+            else
+            {
+                ChatUtils.SendCustomChatMessage("Invalid time format. Please enter a number greater than 0 in seconds (e.g. '120'):");
+            }
+        }
+        else if (_waitingForClutchTime)
+        {
+            if (float.TryParse(extractedMessage, out float clutchTime) && clutchTime > 0 && clutchTime < _kickTime)
+            {
+                _clutchTime = clutchTime;
+                _waitingForClutchTime = false;
+
+                // Unsubscribe from chat messages
+                ZeepkistNetwork.ChatMessageReceived -= OnChatMessageReceived;
+                CommandCreateVotingLevel.OnHandle += SaveCurrentLevelAsVotingLevelToJson;
+                // Complete the saving process
+                CompleteSavingProcess();
+            }
+            else
+            {
+                ChatUtils.SendCustomChatMessage($"Invalid time. Please enter a number between 0 and {_kickTime} seconds:");
+            }
+        }
+    }
+
+    private void CompleteSavingProcess()
+    {
+        IModStorage modStorage = StorageApi.CreateModStorage(this);
         string currentLevelName = PlayerManager.Instance.currentMaster.GlobalLevel.Name;
         string currentLevelUid = PlayerManager.Instance.currentMaster.GlobalLevel.UID;
         VotingLevelsJsonWrapper jsonWrapper = new VotingLevelsJsonWrapper();
@@ -175,16 +241,23 @@ public class Plugin : BaseUnityPlugin
             Logger.LogError(e);
             jsonWrapper.VotingLevels = new List<VotingLevel>();
             modStorage.SaveToJson("VotingLevels", jsonWrapper);
+            Messenger.LogError($"Failed to load voting levels: {e.Message}", 5f);
         }
 
         VotingLevel votingLevel = new VotingLevel
         {
-            KickFinishTime = 0,
-            ClutchFinishTime = 0,
+            KickFinishTime = _kickTime,
+            ClutchFinishTime = _clutchTime,
             LevelUid = currentLevelUid,
             LevelName = currentLevelName
         };
+
         jsonWrapper.VotingLevels.Add(votingLevel);
         modStorage.SaveToJson("VotingLevels", jsonWrapper);
+        Messenger.LogSuccess($"Successfully registered '{currentLevelName}' as a voting level with Kick time: {_kickTime}s and Clutch time: {_clutchTime}s", 5f);
+        Machine.VotingLevels = GetVotingLevels();
+        // Reset the values
+        _kickTime = 0;
+        _clutchTime = 0;
     }
 }

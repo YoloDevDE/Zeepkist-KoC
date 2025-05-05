@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Crosstales;
 using KoC.commands;
 using KoC.models;
+using KoC.utils;
 using ZeepkistClient;
 using ZeepSDK.Messaging;
 using ZeepSDK.Multiplayer;
@@ -13,6 +16,7 @@ public class KoC
     public SubmissionLevel CachedSubmissionLevel;
     public VotingLevel CurrentVotingLevel;
     public bool Enabled;
+    public Dictionary<ulong, float> OriginalVoteTime = new Dictionary<ulong, float>();
     public BaseState State;
     public SubmissionLevel SubmissionLevel;
     public List<VotingLevel> VotingLevels;
@@ -40,8 +44,9 @@ public class KoC
         if (!Enabled)
         {
             MultiplayerApi.DisconnectedFromGame += Disable;
+            MultiplayerApi.PlayerJoined += MultiplayerApiOnPlayerJoined;
             TransitionTo(new StateCheckCachedLevel(this));
-            ZeepkistNetwork.SendCustomChatMessage(false, ZeepkistNetwork.LocalPlayer.SteamID, StartMessage(), new string('-', 28));
+            ChatUtils.SendCustomChatMessage(StartMessage());
         }
         else
         {
@@ -49,14 +54,37 @@ public class KoC
         }
     }
 
+    private static async void MultiplayerApiOnPlayerJoined(ZeepkistNetworkPlayer player)
+    {
+        ZeepkistNetwork.TryGetPlayer(player.SteamID, out ZeepkistNetworkPlayer localPlayer);
+        while (player.Zeepkist.displayRuntime <= 0)
+        {
+            await Task.Yield(); // Wait for a frame update instead of a time delay
+        }
+
+        string ctToHexRGB = player.chatColor.CTToHexRGB();
+        string message = $"Welcome <b><color=#{ctToHexRGB}>{player.GetTaggedUsername()}</color></b> to <color=#ff8800>Kick</color><color=#4444ff> or</color><color=#ff8800> Clutch</color>!<br>" +
+                         "Here we play and vote on maps which get uploaded to " +
+                         "<color=#FF0000>youtube.com/@owlplague</color><br>" +
+                         "When on the voting map, vote by finishing in either the <color=#ff0000>KICK</color> or <color=#00ff00>CLUTCH</color> finish.<br>" +
+                         "<color=#ff0000>Don't bother using the mapper finish - your time won't count!</color><br>" +
+                         "Want to submit your own maps? Join the CTR Discord server to participate!";
+        ChatUtils.SendCustomChatMessage(message, player.SteamID);
+    }
+
     private string StartMessage()
     {
         string restrictedVoting =
             (Plugin.Instance.OnlyEligiblePlayersCanVote.Value ? "<#00FF00>ON" : "<#FF0000>OFF") +
             "</color>";
-        string msg = "<br>" +
-                     "<color=#c2c2c2><color=#ff8800>Kick</color><color=#4444ff> or</color><color=#ff8800> Clutch</color> started!<br>" +
+        string msg = "<color=#c2c2c2><color=#ff8800>Kick</color><color=#4444ff> or</color><color=#ff8800> Clutch</color> started!<br>" +
                      $"Restricted Voting: {restrictedVoting}</color>";
+        // "Welcome to <color=#ff8800>Kick</color><color=#4444ff> or</color><color=#ff8800> Clutch</color>!<br>" +
+        // "Here we play and vote on maps which get uploaded to " +
+        // "<color=#FF0000>youtube.com/@owlplague</color><br>" +
+        // "When on the voting map, vote by finishing in either the <color=#ff8800>KICK</color> or <color=#4444ff>CLUTCH</color> finish.<br>" +
+        // "<color=#ff0000>Don't bother using the mapper finish - your time won't count!</color><br>" +
+        // "Want to submit your own maps? Join the CTR Discord server to participate!";
         return msg;
     }
 
@@ -66,6 +94,7 @@ public class KoC
         {
             MessengerApi.Log("KoC stopped");
             MultiplayerApi.DisconnectedFromGame -= Disable;
+            MultiplayerApi.PlayerJoined -= MultiplayerApiOnPlayerJoined;
             TransitionTo(new StateDisabled(this));
         }
         else

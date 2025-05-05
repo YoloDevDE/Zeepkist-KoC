@@ -6,6 +6,32 @@ namespace KoC.utils;
 
 public class ChatUtils
 {
+    private const int SEPARATOR_LENGTH = 28;
+    private const string SEPARATOR = "<#444444>-----</color><color=#ff8800>Kick</color><color=#4444ff> or</color><color=#ff8800> Clutch</color><#444444>-----</color>";
+
+    public static void SendCustomChatMessage(string message, string tag)
+    {
+        ZeepkistNetwork.SendCustomChatMessage(true, 0, "<br><color=#CCCCCC><size=95%>" + message + "</size></color>", tag);
+    }
+
+    public static void SendCustomChatMessage(string message)
+    {
+        ZeepkistNetwork.SendCustomChatMessage(true, 0, "<br><color=#CCCCCC><size=95%>" + message + "</size></color>", SEPARATOR);
+    }
+
+    public static void SendCustomChatMessage(string message, params ulong[] steamIds)
+    {
+        foreach (ulong steamId in steamIds)
+        {
+            ZeepkistNetwork.SendCustomChatMessage(false, steamId, "<br><color=#CCCCCC><size=95%>" + message + "</size></color>", SEPARATOR);
+        }
+    }
+
+    public static void SendLocalCustomChatMessage(string message)
+    {
+        ZeepkistNetwork.SendCustomChatMessage(false, ZeepkistNetwork.LocalPlayer.SteamID, "<br><color=#CCCCCC><size=95%>" + message + "</size></color>", SEPARATOR);
+    }
+
     public static void AddNewChatMessage(ZeepkistChatMessage message)
     {
         ZeepkistNetwork.ChatMessages.Add(message);
@@ -65,7 +91,7 @@ public class ChatUtils
         string measureSticks = "|".PadRight((int)(ratioMeterLength * 0.5)) + "|".PadRight((int)(ratioMeterLength * 0.5)) + "|";
 
 
-        return $"/servermessage white 0 <align=\"left\"><margin-left=\"50%\"><size=\"25%\"><br>" +
+        return $"/servermessage white 0 <align=\"left\"><margin-left=\"50%\"><size=\"25%\">" +
                $"<line-height=50%><u><b>{submissionLevel.Name}</b> <#ffffff>by <#ff9900>{submissionLevel.Author}</u><br><br><#ffffff>" +
                $"<line-height=95%><#ffffff><b><u>{kocText}</u></b><br>" +
                $"<pos=0>{ratioMeterString}" +

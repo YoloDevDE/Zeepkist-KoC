@@ -11,7 +11,6 @@ public class StateDisabled(KoC koC) : BaseState(koC)
 {
     public override void Enter()
     {
-        ChatApi.SendMessage("/joinmessage off");
         ChatApi.SendMessage("/servermessage remove");
         KoC.Enabled = false;
         KoC.SubmissionLevel = null;

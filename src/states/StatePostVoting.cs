@@ -1,4 +1,5 @@
-﻿using ZeepkistClient;
+﻿using System.Collections.Generic;
+using ZeepkistClient;
 using ZeepSDK.Racing;
 
 namespace KoC.states;
@@ -8,6 +9,14 @@ public class StatePostVoting(KoC koC) : BaseState(koC)
     public override void Enter()
     {
         RacingApi.LevelLoaded += OnLevelLoaded;
+
+        foreach (KeyValuePair<ulong, float> keyValuePair in koC.OriginalVoteTime)
+        {
+            ZeepkistNetwork.CustomLeaderBoard_SetPlayerLeaderboardOverrides(keyValuePair.Key);
+            ZeepkistNetwork.CustomLeaderBoard_SetPlayerTimeOnLeaderboard(keyValuePair.Key, keyValuePair.Value, false);
+        }
+
+        koC.OriginalVoteTime = new Dictionary<ulong, float>();
         ZeepkistNetwork.PlayerResultsChanged += OnPlayerResultsChanged;
     }
 
