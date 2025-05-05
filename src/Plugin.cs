@@ -112,7 +112,7 @@ public class Plugin : BaseUnityPlugin
     private void OnDestroy()
     {
         _harmony?.UnpatchSelf();
-        _harmony = null;
+        _harmony = null; 
     }
 
     public ManualLogSource GetLogger()
