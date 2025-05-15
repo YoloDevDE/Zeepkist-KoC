@@ -4,7 +4,7 @@
         <TargetFramework>net472</TargetFramework>
         <AssemblyName>KoC</AssemblyName>
         <Description>Kick or Clutch Mod</Description>
-        <Version>1.17.0</Version>
+        <Version>1.17.1</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
@@ -29,8 +29,8 @@
         <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" IncludeAssets="compile"/>
         <PackageReference Include="Fody" Version="6.9.2" PrivateAssets="all"/> <!-- Fody package -->
         <PackageReference Include="Costura.Fody" Version="6.0.0" PrivateAssets="all"/> <!-- Costura package -->
-        <PackageReference Include="Zeepkist.GameLibs" Version="17.1.1762"/>
-        <PackageReference Include="ZeepSDK" Version="1.43.0"/>
+        <PackageReference Include="Zeepkist.GameLibs" Version="17.5.1800"/>
+        <PackageReference Include="ZeepSDK" Version="1.44.0"/>
     </ItemGroup>
 
     <!-- Conditional Dependencies -->

@@ -12,8 +12,14 @@ public class StatePreVoting(KoC koC) : BaseState(koC)
     {
         KoC.InitializeEligibleVoters();
         CommandRegisterSubmissionLevel.OnHandle += RegisterSubmissionLevel;
+        CommandZivecef.OnHandle += OnMegaKick;
         RacingApi.LevelLoaded += OnLevelLoaded;
         MultiplayerApi.PlayerJoined += OnPlayerJoined;
+    }
+
+    private void OnMegaKick()
+    {
+        KoC.TransitionTo(new StateMegaKick(KoC));
     }
 
 
@@ -57,6 +63,7 @@ public class StatePreVoting(KoC koC) : BaseState(koC)
     public override void Exit()
     {
         CommandRegisterSubmissionLevel.OnHandle -= RegisterSubmissionLevel;
+        CommandZivecef.OnHandle -= OnMegaKick;
         RacingApi.LevelLoaded -= OnLevelLoaded;
         MultiplayerApi.PlayerJoined -= OnPlayerJoined;
     }

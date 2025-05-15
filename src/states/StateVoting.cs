@@ -24,6 +24,7 @@ public class StateVoting(KoC koC) : BaseState(koC)
         MultiplayerApi.PlayerJoined += OnPlayerJoined;
         MultiplayerApi.PlayerLeft += OnPlayerLeft;
         RacingApi.RoundEnded += OnRoundEnded;
+        RacingApi.PlayerSpawned += OnPlayerSpawned;
         Plugin.Instance.OnlyEligiblePlayersCanVote.SettingChanged += OnSettingChanged;
         FavoritePlayerChangedNotifier.FavoritePlayersChanged += OnFavoritePlayersChanged;
         CommandVotingResult.OnHandle += OnVotingFinished;
@@ -44,6 +45,24 @@ public class StateVoting(KoC koC) : BaseState(koC)
         ChatUtils.SendCustomChatMessage(Plugin.Instance.AutoMessage);
     }
 
+    private void OnPlayerSpawned()
+    {
+        if (PlayerManager.Instance.currentMaster.isPhotoMode)
+        {
+            return;
+        }
+
+        PlayerManager.Instance.currentMaster.flyingCamera.ToggleFlyingCamera();
+        SpectatorCameraUI flyingCameraSpectatorCameraUI = PlayerManager.Instance.currentMaster.flyingCamera.SpectatorCameraUI;
+        flyingCameraSpectatorCameraUI.FOV.enabled = false;
+        flyingCameraSpectatorCameraUI.inputDisplay.enabled = false;
+        flyingCameraSpectatorCameraUI.SmallTooltips.enabled = false;
+        flyingCameraSpectatorCameraUI.Target.enabled = false;
+        flyingCameraSpectatorCameraUI.Target_SteamID.enabled = false;
+        flyingCameraSpectatorCameraUI.Mode.enabled = false;
+        RacingApi.PlayerSpawned -= OnPlayerSpawned;
+    }
+
     private void OnSettingChanged(object sender, EventArgs e)
     {
         ProcessVotes(null);
@@ -59,6 +78,7 @@ public class StateVoting(KoC koC) : BaseState(koC)
         Plugin.Instance.OnlyEligiblePlayersCanVote.SettingChanged -= OnSettingChanged;
         FavoritePlayerChangedNotifier.FavoritePlayersChanged -= OnFavoritePlayersChanged;
         CommandVotingResult.OnHandle -= OnVotingFinished;
+        RacingApi.PlayerSpawned -= OnPlayerSpawned;
     }
 
     private void OnPlayerJoined(ZeepkistNetworkPlayer player)

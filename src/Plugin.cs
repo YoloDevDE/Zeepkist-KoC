@@ -40,7 +40,10 @@ public class Plugin : BaseUnityPlugin
     public ConfigEntry<bool> OnlyEligiblePlayersCanVote { get; set; }
 
     public string AutoMessage { get; set; } =
-        "<color=#00ccff>Voting has started!</color><br>The <color=#ffcc00>MAPPER FINISH</color> is reserved for the map creators.<br>Please vote by taking either the <color=#00ff00>CLUTCH FINISH</color><br>if you enjoyed the map or the <color=#ff0000>KICK FINISH</color> if you didn't :YannicSmile:";
+        "<color=#00ccff><b><u>Voting has started!</u></b></color>" +
+        "<br><#ffcc00>MAPPER FINISH</color> - Reserved for map creators only :YannicSmile:" +
+        "<br><#00ff00>CLUTCH FINISH</color> - Choose this if you enjoyed the map :sparkles:" +
+        "<br><color=#ff0000>KICK FINISH</color> - Choose this if you didn't enjoy the map :skull:";
 
     public string ResultServerMessage { get; set; } = "%l by %a<br>%r";
 
