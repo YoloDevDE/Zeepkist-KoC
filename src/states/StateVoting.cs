@@ -11,7 +11,7 @@ namespace KoC.states;
 
 public class StateVoting(KoC koC) : BaseState(koC)
 {
-    private int _finishCounter;
+    private float _finishCounter;
     private VotingLevel CurrentVotingLevel { get; set; }
 
     public override void Enter()
@@ -191,15 +191,18 @@ public class StateVoting(KoC koC) : BaseState(koC)
             koC.OriginalVoteTime[player.SteamID] = player.CurrentResult.Time;
             KoC.SubmissionLevel.AddVoteKick(player.SteamID);
             ZeepkistNetwork.CustomLeaderBoard_SetPlayerLeaderboardOverrides(player.SteamID, "<color=#bb0000>KICK</color>", position: "<color=#ff0000><b><sprite=\"Zeepkist\" name=\"Skull\"></b></color>");
-            ZeepkistNetwork.CustomLeaderBoard_SetPlayerTimeOnLeaderboard(player.SteamID, 600f - _finishCounter++, false);
+            ZeepkistNetwork.CustomLeaderBoard_SetPlayerTimeOnLeaderboard(player.SteamID, 600f - _finishCounter, false);
+            _finishCounter += 0.0001f;
         }
         else
         {
             koC.OriginalVoteTime[player.SteamID] = player.CurrentResult.Time;
             KoC.SubmissionLevel.AddVoteClutch(player.SteamID);
             ZeepkistNetwork.CustomLeaderBoard_SetPlayerLeaderboardOverrides(player.SteamID, "<color=#00bb00>CLUTCH</color>", position: "<color=#ff0000><b><sprite=\"Zeepkist\" name=\"Sparkle\"></b></color>");
-            ZeepkistNetwork.CustomLeaderBoard_SetPlayerTimeOnLeaderboard(player.SteamID, 600f - _finishCounter++, false);
+            ZeepkistNetwork.CustomLeaderBoard_SetPlayerTimeOnLeaderboard(player.SteamID, 600f - _finishCounter, false);
+            _finishCounter += 0.0001f;
         }
+
 
         ChatApi.SendMessage(ChatUtils.UpdateVotingResultsMessage(votesClutch: koC.SubmissionLevel.VotesClutch, votesKick: koC.SubmissionLevel.VotesKick, submissionLevel: koC.SubmissionLevel));
     }

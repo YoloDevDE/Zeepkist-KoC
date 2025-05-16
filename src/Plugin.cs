@@ -42,7 +42,7 @@ public class Plugin : BaseUnityPlugin
     public string AutoMessage { get; set; } =
         "<color=#00ccff><b><u>Voting has started!</u></b></color>" +
         "<br><#ffcc00>MAPPER FINISH</color> - Reserved for map creators only :YannicSmile:" +
-        "<br><#00ff00>CLUTCH FINISH</color> - Choose this if you enjoyed the map :sparkles:" +
+        "<br><#00ff00>CLUTCH FINISH</color> - Choose this if you enjoyed the map :sparkle:" +
         "<br><color=#ff0000>KICK FINISH</color> - Choose this if you didn't enjoy the map :skull:";
 
     public string ResultServerMessage { get; set; } = "%l by %a<br>%r";
