@@ -3,7 +3,7 @@ using ZeepSDK.ChatCommands;
 
 namespace KoC.commands;
 
-public class CommandZivecef : ILocalChatCommand
+public class CommandMegaKick : ILocalChatCommand
 {
     public static Action OnHandle;
     public string Prefix => "/";

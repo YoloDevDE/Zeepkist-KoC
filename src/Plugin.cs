@@ -139,7 +139,7 @@ public class Plugin : BaseUnityPlugin
         ChatCommandApi.RegisterLocalChatCommand<CommandVotingResult>();
         ChatCommandApi.RegisterLocalChatCommand<CommandCreateVotingLevel>();
         ChatCommandApi.RegisterLocalChatCommand<CommandRegisterSubmissionLevel>();
-        ChatCommandApi.RegisterLocalChatCommand<CommandZivecef>();
+        ChatCommandApi.RegisterLocalChatCommand<CommandMegaKick>();
     }
 
     private void RegisterEvents()
